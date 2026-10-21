@@ -20,6 +20,8 @@ npm run build   # dist/main.js, servi par jsDelivr (tag de version, jamais @main
 | `src/etat.js` | localStorage (`kapam.config.v1`, 30 jours), synchronisation entre onglets |
 | `src/vues.js` | `creerApp()` : clone les gabarits, remplit les `data-champ`, pose les états, gère les clics et le formulaire |
 | `src/main.js` | Point d'entrée : lecture du CMS → `indexer` → état → `creerApp().rendre()` ; expose `window.kapamConfigurateur` |
+| `src/3d.js`, `src/3d-correspondance.js` | Scène 3D (three.js, chunk `dist/3d.js` chargé à l'étape 2.1 si le kit a un GLB) ; pièces par objets vides `opt-<slug>`, secours par nom |
+| `scripts/` | `glb-exemple.mjs` (GLB de test), `page-test.mjs` + `fumee.mjs` (`npm run page-test` : page locale + Chromium headless) |
 | `webflow/code-head.html`, `webflow/code-footer.html` | Code à coller dans les paramètres de la page Webflow (style anti-flash, balise script) |
 | `test/reference-prototype.js` | Fonctions du prototype recopiées telles quelles (référence) |
 | `test/adaptateur.js` | Catalogue prototype → format CMS, avec les choix de la migration du 20/10 |
@@ -64,6 +66,13 @@ Attributs posés par le script sur les clones : `data-marque`, `data-vehicule`, 
 1. Coller `webflow/code-head.html` dans le head de la page et `webflow/code-footer.html` avant `</body>` (version jsDelivr épinglée).
 2. Les réglages du formulaire (adresse de notification, réponse automatique) se font dans Webflow → Forms ; le script remplit les champs cachés `data-champ-form` avant l'envoi.
 
+## 3D
+
+- GLB du kit : champ CMS « GLB » (collection Kits), compressé avec `npx gltf-transform meshopt entree.glb sortie.glb`, hébergé dans `assets/` du dépôt (jsDelivr).
+- Dans Blender, les pièces d'une option sont regroupées sous un objet vide `opt-<slug 3D>` (champ « Slug 3D » de l'option, sinon son slug). Tant que ce n'est pas fait, `3d-correspondance.js` relie par nom, comme le prototype.
+- Le bois prend la teinte de la finition (champ « Teinte »). Clic sur le titre d'une option reliée : la caméra la vise (fantôme 3,5 s si non retenue).
+- Classes à styler dans le Designer : `config_scene3d_canvas`, `config_scene3d_vues` (boutons `config_lien` avec `aria-pressed`).
+
 ## À venir
 
-Module 3D (three.js, GLB du kit, nœuds `opt-<slug>`), drawers (résumé, détail d'option, comparateur de kits), nuanciers avec décors quand Willy fournit références et photos, lot mobile.
+Drawers (résumé, détail d'option, comparateur de kits), nuanciers avec décors quand Willy fournit références et photos, lot mobile.
