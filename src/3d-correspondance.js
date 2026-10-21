@@ -25,12 +25,15 @@ export const CORRESPONDANCE_PAR_NOM = {
   'Plancher Superpan H-Deck 12mm': ['=Plancher'],
 }
 
-/** Matériaux du GLB dont la couleur suit la finition choisie (bois). */
-export const MATERIAUX_BOIS = ['bois', '1er strat', 'brut blender']
+/**
+ * Matériaux du GLB dont la couleur suit la finition choisie (bois).
+ * Le prototype ne teintait que « bois », « 1er strat » et « brut blender » (2 pièces dans le GLB actuel) ;
+ * « brut » (119 pièces, tout le mobilier) y restait beige. Ici le mobilier entier suit la finition : à valider avec Willy.
+ */
+export const MATERIAUX_BOIS = ['bois', '1er strat', 'brut blender', 'brut']
 
 /** Couleurs à plat des autres matériaux (le modèle est livré sans texture). */
 export const TEINTES_MATERIAUX = {
-  brut: '#e3cba4',                      // contreplaqué brut
   Fabric074_4K_Color: '#b3ad52',        // coussins
   'ceramic_53_basecolor-4K': '#9c958a', // sol
 }

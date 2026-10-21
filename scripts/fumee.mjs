@@ -18,7 +18,7 @@ const erreurs = []
 page.on('pageerror', (e) => erreurs.push('pageerror: ' + e.message))
 page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') erreurs.push(`${m.type()}: ${m.text()}`) })
 await page.goto(`http://localhost:${port}/`)
-const r = await page.evaluate(async () => {
+const r = await page.evaluate(async (attente) => {
   const app = window.kapamConfigurateur.app
   const dodo = (ms) => new Promise((r) => setTimeout(r, ms))
   document.querySelector('[data-liste="marques"] [data-marque="renault"]').click()
@@ -27,15 +27,17 @@ const r = await page.evaluate(async () => {
   document.querySelector('[data-action="suivant"]').click()
   document.querySelector('[data-liste="kits"] [data-kit="travel"]').click()
   document.querySelector('[data-liste="finitions"] [data-finition="best"]').click()
-  await dodo(2500)
+  await dodo(attente)
   const scene = document.querySelector('[data-scene="3d"]')
+  const s3 = window.kapamConfigurateur.scene3d
+  const reliees = s3 ? window.kapamConfigurateur.catalogue.options.filter((o) => s3.aDesPieces(o.slug)).map((o) => o.nom) : []
   const canvas = scene.querySelector('canvas')
   const frigo = document.querySelector('[data-option="3e370bd669cd81d98cf9fd1868ad89c2"]')
   frigo?.querySelector('[data-champ="case"]').click()
   await dodo(800)
   return { etape: app.etat().etape, canvas: !!canvas, taille: canvas && [canvas.width, canvas.height], etat3d: scene.querySelector('[data-champ="etat-3d"]').textContent,
-    etat3dCache: scene.querySelector('[data-champ="etat-3d"]').hidden, vues: scene.querySelectorAll('[data-vue]').length, frigo: !!frigo, options: app.etat().options }
-})
+    etat3dCache: scene.querySelector('[data-champ="etat-3d"]').hidden, vues: scene.querySelectorAll('[data-vue]').length, frigo: !!frigo, options: app.etat().options, reliees }
+}, Number(process.env.ATTENTE ?? 2500))
 await page.screenshot({ path: join(dossier, 'capture.png') })
 await browser.close(); srv.close()
 console.log(JSON.stringify(r, null, 1)); console.log('erreurs :', erreurs.length ? erreurs : 'aucune')

@@ -12,7 +12,7 @@ function brancher3d(racine, catalogue) {
   const conteneur = racine.querySelector('[data-scene="3d"]')
   if (!conteneur) return
   let scene = null, chargement = null, dernier = null
-  const pret = () => (chargement ??= import('./3d.js').then((m) => { scene = m.creerScene3d(conteneur); return scene }))
+  const pret = () => (chargement ??= import('./3d.js').then((m) => { scene = m.creerScene3d(conteneur); if (window.kapamConfigurateur) window.kapamConfigurateur.scene3d = scene; return scene }))
 
   const etatEl = conteneur.querySelector('[data-champ="etat-3d"]')
   racine.addEventListener('kapam:configuration', (ev) => {

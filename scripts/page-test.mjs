@@ -8,7 +8,8 @@ mkdirSync(dossier, { recursive: true })
 const extrait = JSON.parse(readFileSync(new URL('../test/fixtures/prototype-catalogue.json', import.meta.url)))
 const brut = versCms(normaliser(extrait))
 const frigo = brut.options.find((o) => o.nom.startsWith('Frigo Vitrifrigo'))
-writeFileSync(`${dossier}/kit-test.glb`, await fabriquer(`opt-${frigo.slug}`))
+if (process.env.GLB) copyFileSync(process.env.GLB, `${dossier}/kit-test.glb`)   // GLB=chemin/vers/kit.glb : vrai modèle
+else writeFileSync(`${dossier}/kit-test.glb`, await fabriquer(`opt-${frigo.slug}`))
 brut.kits.find((k) => k.slug === 'travel').glb = 'kit-test.glb'
 brut.finitions.forEach((f) => { f.teinte = { soft: '#dcb584', triply: '#cfa163', best: '#8e6c4b' }[f.slug] })
 
