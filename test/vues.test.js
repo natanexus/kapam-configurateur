@@ -36,6 +36,9 @@ describe('parcours complet sur la page Webflow', () => {
     expect(marques.length).toBeGreaterThan(3)
     expect(marques[0].dataset.marque).toBe(cat.marques[0].slug)
     expect(marques[0].querySelector('[data-champ="titre"]').textContent).toBe(cat.marques[0].nom)
+    const renault = $('[data-liste="marques"] [data-marque="renault"] .config_carte_photo')
+    expect(renault.hidden).toBe(false)                                          // photo du modèle recommandé (Trafic 3)
+    expect(renault.src).toBe(cat.par.vehicules.get(trafic3).photo)
     expect($('[data-action="suivant"]').disabled).toBe(true)
     expect(visible($('[data-bloc="pas-encore"]'))).toBe(false)
     expect($$('[data-gabarits] [data-gabarit]').length).toBe(8)   // les gabarits restent intacts

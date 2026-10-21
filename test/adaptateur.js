@@ -90,6 +90,7 @@ export function versCms(p) {
       plateforme: PLATEFORMES[v.plateforme_code] ?? null,
       groupe: v.kit_universel ? 'universel' : v.kits.includes('Combi') ? 'combi' : v.plateforme_code === 'X82' ? 'x82' : null,
       kits: v.kits.map(kitCms), statut: STATUTS[v.statut], recommande: RECOMMANDES.includes(v.id),
+      photo: `https://cdn.example/${v.id}.webp`,   // photos de test (le CMS en a 32 sur 34)
     })),
     longueurs: vehicules.flatMap((v) => v.longueurs.map((l, i) => ({ slug: slugLongueur(v, i), vehicule: v.id, etiquette: l.etiquette, gabarit: l.gabarit, ordre: i + 1 }))),
     grille: p.grille.filter((g) => g.statut !== 'Retiré').map((g) => ({

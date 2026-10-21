@@ -196,9 +196,12 @@ export function creerApp({ document: doc, catalogue: cat, etat: etat0, sauver = 
       cle: 'vehicule', valeur: x.slug, titre: nomVehicule(x), sous: x.argument, visuel: x.photo, selectionne: etat.vehicule === x.slug,
     })))
     const actifs = vehiculesActifs()
+    // Photo de la marque : son modèle le plus représentatif qui a une photo (recommandé, puis millésime récent), comme le prototype.
+    const rang = (x) => (x.recommande ? 0 : /\+|post|202[4-9]/.test(x.millesime || '') ? 1 : 2)
+    const photoMarque = (m) => actifs.filter((x) => x.marque === m.slug && x.photo).sort((a, b) => rang(a) - rang(b))[0]?.photo
     remplir('marques', cat.marques.filter((m) => actifs.some((x) => x.marque === m.slug)).map((m) => {
       const n = actifs.filter((x) => x.marque === m.slug).length
-      return carte({ cle: 'marque', valeur: m.slug, titre: m.nom, sous: pluriel(n, 'modèle'), logo: m.logo, selectionne: etat.marque === m.slug })
+      return carte({ cle: 'marque', valeur: m.slug, titre: m.nom, sous: pluriel(n, 'modèle'), logo: m.logo, photo: photoMarque(m), selectionne: etat.marque === m.slug })
     }))
   }
 
