@@ -1,0 +1,158 @@
+<!-- Copie structurelle de la page Webflow « Configurateur » (attributs data-*, sans les styles). -->
+<div class="page-wrapper">
+  <main class="config_app" data-configurateur>
+    <header class="config_topbar"><a href="/">← Quitter le configurateur</a><a class="button-primary" href="/contact">Nous contacter</a></header>
+    <div class="config_layout" data-zone="layout">
+      <div class="config_stage" data-zone="stage">
+        <div class="config_stage_grille" data-liste="marques" data-scene="marques"></div>
+        <div class="config_stage_grille" data-liste="modeles" data-scene="modeles"></div>
+        <div class="config_stage_visuel" data-scene="vehicule"><img class="config_stage_photo" src="" alt=""></div>
+        <div class="config_scene3d" data-scene="3d"><div data-champ="etat-3d">Chargement du kit…</div></div>
+      </div>
+      <div class="config_panel" data-zone="panel">
+        <section class="config_step" data-etape="1.1" data-scene="marques" data-suivante="Modèle">
+          <span class="config_eyebrow" data-champ="compteur">1 sur 6</span>
+          <h1>Choisissons le véhicule</h1>
+          <div class="config_pile" data-liste="situations">
+            <button type="button" class="config_choix" data-situation="je-lai-deja" aria-pressed="false"><span data-champ="titre">Je l'ai déjà</span></button>
+            <button type="button" class="config_choix" data-situation="pas-encore" aria-pressed="false"><span data-champ="titre">Pas encore de modèle</span></button>
+          </div>
+          <div class="config_bloc" data-bloc="pas-encore">
+            <div class="config_pile" data-liste="recommandes"></div>
+            <button type="button" class="config_choix" data-demande="conseil">Être conseillé par Kapam</button>
+            <a href="/catalogue/vehicule-a-vendre">Voir nos vans clés en main</a>
+          </div>
+        </section>
+        <section class="config_step" data-etape="1.2" data-scene="modeles" data-suivante="Longueur">
+          <span class="config_eyebrow" data-champ="compteur"></span>
+          <h2>Quel est le modèle ?</h2>
+          <span data-champ="nom-marque"></span><span class="config_eyebrow" data-champ="nb-modeles"></span>
+          <div class="config_pile" data-liste="modeles-liste"></div>
+          <div class="config_bloc" data-bloc="hors-liste"><button type="button" class="config_choix" data-action="hors-liste" aria-pressed="false">Mon véhicule n'est pas dans la liste</button></div>
+        </section>
+        <section class="config_step" data-etape="1.3" data-scene="vehicule" data-suivante="Kit &amp; finition">
+          <span class="config_eyebrow" data-champ="compteur"></span>
+          <h2>Quelle longueur ?</h2>
+          <div class="config_choix_titre" data-champ="nom-vehicule"></div>
+          <button type="button" class="config_lien" data-action="changer-vehicule">Changer de véhicule</button>
+          <div class="config_deux" data-liste="longueurs"></div>
+          <details><summary>Kits compatibles</summary><span data-champ="kits-compatibles"></span></details>
+        </section>
+        <section class="config_step" data-etape="2.1" data-scene="3d" data-suivante="Coordonnées">
+          <span class="config_eyebrow" data-champ="compteur"></span>
+          <div class="config_bloc" data-bloc="kits"><span class="config_eyebrow" data-champ="kit-compatible"></span><div class="config_pile" data-liste="kits"></div>
+            <button type="button" class="config_choix config_choix-secondaire" data-action="comparer-kits">Comparer les kits</button></div>
+          <div class="config_bloc" data-bloc="finitions"><span class="config_eyebrow" data-champ="nb-finitions"></span><div class="config_pile" data-liste="finitions"></div><div class="config_pile" data-liste="upsell"></div></div>
+          <div class="config_section" data-bloc="couleurs"><p class="config_chapo" data-champ="couleurs-chapo"></p><div class="config_pile" data-liste="nuanciers"></div></div>
+          <div class="config_section" data-section="options-du-kit"><h3>Personnalisez votre <span data-champ="nom-kit">kit</span></h3><div class="config_pile" data-liste="options"></div></div>
+          <div class="config_section" data-section="vitrage-isolation-aeration"><h3>Vitrage</h3><div class="config_pile" data-liste="options"></div></div>
+          <div class="config_section" data-section="parois-plafond-plancher"><h3>Plancher et finitions</h3><div class="config_pile" data-liste="options"></div></div>
+          <div class="config_section" data-section="electricite"><h3>Électricité</h3><div class="config_pile" data-liste="options"></div></div>
+          <div class="config_section" data-section="mise-en-eau"><h3>Mise en eau</h3><div class="config_pile" data-liste="options"></div></div>
+          <div class="config_section" data-section="wc-electromenager"><h3>WC · Électroménager</h3><div class="config_pile" data-liste="options"></div></div>
+          <div class="config_section" data-section="chauffage"><h3>Chauffage</h3><div class="config_pile" data-liste="options"></div></div>
+          <div class="config_section" data-section="accessoires"><h3>Avez-vous pensé à ceci ?</h3><div class="config_pile" data-liste="options"></div></div>
+          <div class="config_step_fin">
+            <div class="config_section" data-bloc="montage">
+              <button type="button" class="config_choix" data-montage="soi-meme" aria-pressed="false"><span data-champ="titre">En kit, je monte moi-même</span><span class="config_choix_prix" data-champ="total-soi-meme"></span></button>
+              <button type="button" class="config_choix" data-montage="atelier" aria-pressed="false"><span data-champ="titre">Clé en main, posé par l'atelier</span><span class="config_choix_prix" data-champ="total-atelier"></span></button>
+              <details class="config_detail" data-bloc="detail-pose"><summary>Ce qui est compris dans la pose atelier · <span data-champ="montant-pose"></span></summary>
+                <div class="config_pile" data-liste="postes-imposes"></div><p class="config_mention" data-champ="paliers"></p></details>
+              <div class="config_pile" data-liste="vasp" data-bloc="vasp"></div>
+            </div>
+            <div class="config_section" data-bloc="preparation"><h3>Préparer votre fourgon vous-même</h3><div class="config_pile" data-liste="preparation"></div></div>
+            <div class="config_bloc" data-bloc="recap"><h3>Récapitulatif de votre configuration</h3><div class="config_recap" data-liste="recap"></div>
+              <div class="config_recap_ligne"><span>Total indicatif TTC</span><span data-champ="total"></span></div><p class="config_mention">Prix indicatif. Devis personnalisé sous 48h.</p></div>
+            <div class="config_final"><button type="button" class="button-primary" data-action="demander-devis">Demander un devis</button></div>
+          </div>
+        </section>
+      </div>
+    </div>
+    <div class="config_contact" data-zone="contact">
+      <section class="config_contact_grille" data-etape="3.1" data-suivante="Envoi">
+        <div class="config_contact_form" data-zone="formulaire">
+          <span class="config_eyebrow" data-champ="compteur"></span>
+          <h2 class="config_title" data-champ="titre-contact"></h2><p class="config_chapo" data-champ="chapo-contact"></p>
+          <div class="w-form">
+            <form id="demande-devis" name="Demande de devis" method="post">
+              <div class="config_deux" data-zone="ligne-nom">
+                <input class="form_input" type="text" id="prenom" name="Prénom" data-coord="prenom">
+                <input class="form_input" type="text" id="nom" name="Nom" data-coord="nom" required>
+              </div>
+              <input class="form_input" type="email" id="email" name="Email" data-coord="email" required>
+              <input class="form_input" type="tel" id="telephone" name="Téléphone" data-coord="tel">
+              <input class="form_input" type="text" id="code-postal" name="Code postal" data-coord="cp">
+              <label><input type="radio" id="contact-email" name="Être recontacté par" value="E-mail" data-coord="preference"> E-mail</label>
+              <label><input type="radio" id="contact-telephone" name="Être recontacté par" value="Téléphone" data-coord="preference"> Téléphone</label>
+              <textarea class="form_input" id="message" name="Message" data-coord="mot"></textarea>
+              <label class="form_checkbox"><input type="checkbox" id="consentement" name="Consentement" data-coord="rgpd" required> J'accepte que Kapam utilise mes données pour répondre à ma demande.</label>
+              <input type="hidden" name="Type de demande" data-champ-form="type">
+              <input type="hidden" name="Référence" data-champ-form="reference">
+              <input type="hidden" name="Véhicule" data-champ-form="vehicule">
+              <input type="hidden" name="Total indicatif" data-champ-form="total">
+              <input type="hidden" name="Récapitulatif" data-champ-form="recap">
+              <input type="hidden" name="Configuration" data-champ-form="config">
+              <input type="submit" class="button-primary" value="Envoyer ma demande" data-wait="Envoi en cours…">
+            </form>
+            <div class="w-form-done" data-zone="confirmation" style="display:none">
+              <div class="config_step" data-etape="3.2">
+                <span class="config_eyebrow" data-champ="compteur"></span>
+                <h2>Merci, votre demande est partie.</h2>
+                <div class="config_section_titre" data-champ="reference">KP-2026-0000</div>
+                <a class="button-primary" href="/">Retour à l'accueil</a>
+              </div>
+            </div>
+            <div class="w-form-fail">Une erreur est survenue. Réessayez ou écrivez-nous.</div>
+          </div>
+        </div>
+        <aside class="config_contact_recap">
+          <div class="config_recap" data-liste="resume-demande"></div>
+          <div class="config_bloc"><div class="config_recap" data-liste="recap"></div><div><span>Total indicatif TTC</span><span data-champ="total"></span></div></div>
+        </aside>
+      </section>
+    </div>
+    <footer class="config_bottombar">
+      <button type="button" class="config_prev" data-action="precedent" aria-label="Étape précédente">←</button>
+      <div class="config_eyebrow" data-champ="etape-suivante"></div><strong class="config_total" data-champ="total"></strong>
+      <button type="button" class="config_resume-btn" data-action="ouvrir-resume" aria-label="Voir le résumé">Résumé</button>
+      <button type="button" class="button-primary config_next" data-action="suivant">Suivant</button>
+    </footer>
+  </main>
+
+  <div class="hide" data-gabarits>
+    <button type="button" class="config_carte" data-gabarit="carte" aria-pressed="false">
+      <span class="config_carte_visuel"><img class="config_carte_photo" src="" alt=""><span class="config_carte_logo"><img class="config_carte_logo-img" src="" alt=""></span></span>
+      <span class="config_carte_corps"><span class="config_carte_titre" data-champ="titre">Renault</span><span class="config_carte_sous" data-champ="sous">2 modèles</span></span>
+    </button>
+    <button type="button" class="config_choix" data-gabarit="choix" aria-pressed="false">
+      <span class="config_radio"></span>
+      <span class="config_choix_visuel" data-champ="visuel"><img class="config_choix_img" src="" alt=""></span>
+      <span class="config_choix_corps"><span class="config_choix_titre" data-champ="titre">Kit Travel</span><span class="config_choix_sous" data-champ="sous">Le plus complet</span><span class="config_choix_detail" data-champ="detail">détail</span></span>
+      <span class="config_choix_prix" data-champ="prix">2 195 € TTC</span>
+    </button>
+    <div class="config_ligne" data-gabarit="ligne-option">
+      <button type="button" class="config_case" role="checkbox" aria-checked="false" data-champ="case" aria-label="Ajouter à mon devis"></button>
+      <span class="config_ligne_visuel"><img class="config_ligne_img" src="" alt=""></span>
+      <div class="config_ligne_corps">
+        <div class="config_ligne_titre" data-champ="titre">Pack Éclairage LED</div><div class="config_ligne_sous" data-champ="sous">Sous-libellé</div>
+        <div class="config_ligne_versions" data-zone="versions"></div>
+        <p class="config_ligne_note" data-champ="note">Note client</p><p class="config_ligne_motif" data-champ="motif">Motif</p>
+        <button type="button" class="config_lien" data-action="detail-option">Détails de cette option</button>
+      </div>
+      <div class="config_ligne_droite"><span class="config_badge" data-champ="badge">Inclus atelier</span><span class="config_ligne_prix" data-champ="prix">+ 79 €</span></div>
+    </div>
+    <button type="button" class="config_case-version" role="checkbox" aria-checked="false" data-gabarit="case-version">
+      <span class="config_case"></span><span class="config_case-version_titre" data-champ="titre">Vitre</span><span class="config_ligne_prix" data-champ="prix">450 €</span>
+    </button>
+    <div class="config_select-wrap" data-gabarit="select-versions"><span class="config_eyebrow" data-champ="titre">Version</span><div class="config_versions" data-zone="choix"></div></div>
+    <button type="button" class="config_pastille" data-gabarit="pastille" aria-pressed="false">
+      <span class="config_pastille_echantillon" data-champ="teinte"></span><span class="config_pastille_titre" data-champ="titre">DESIGN 1</span><span class="config_choix_sous" data-champ="sous">inclus</span>
+    </button>
+    <div class="config_recap_ligne" data-gabarit="ligne-recap"><span data-champ="libelle">Prix du kit</span><span class="config_recap_montant" data-champ="montant">2 495 €</span></div>
+    <div class="config_upsell" data-gabarit="upsell">
+      <span class="config_ligne_visuel"><img class="config_ligne_img" src="" alt=""></span>
+      <div class="config_ligne_corps"><div class="config_ligne_titre" data-champ="titre">Avec la finition Best</div><div class="config_ligne_sous" data-champ="sous">Recommandé.</div>
+        <button type="button" class="config_lien" data-action="ajouter">Ajouter à mon devis</button></div>
+    </div>
+  </div>
+</div>
