@@ -30,15 +30,14 @@ export function creerScene3d(conteneur) {
   const doc = conteneur.ownerDocument
   const etatEl = conteneur.querySelector('[data-champ="etat-3d"]')
   const canvas = doc.createElement('canvas')
-  canvas.className = 'config_scene3d_canvas'
-  canvas.style.cssText = 'display:block;width:100%;height:100%;touch-action:none;cursor:grab'
+  canvas.className = 'config_scene3d_canvas'   // stylée dans le Designer
   conteneur.insertBefore(canvas, conteneur.firstChild)
   const boutons = doc.createElement('div')
   boutons.className = 'config_scene3d_vues'
   boutons.setAttribute('role', 'group'); boutons.setAttribute('aria-label', 'Point de vue')
   for (const [i, v] of VUES.entries()) {
     const b = doc.createElement('button')
-    b.type = 'button'; b.className = 'config_lien'; b.textContent = v.nom; b.dataset.vue = String(i)
+    b.type = 'button'; b.className = 'config_scene3d_vue'; b.textContent = v.nom; b.dataset.vue = String(i)
     b.setAttribute('aria-pressed', i === 0 ? 'true' : 'false')
     b.addEventListener('click', () => vue(i))
     boutons.appendChild(b)
@@ -72,7 +71,7 @@ export function creerScene3d(conteneur) {
   }
   function vue(i) {
     theta = VUES[i].theta; phi = VUES[i].phi; distV = base; cibleV.copy(centre)
-    boutons.querySelectorAll('[data-vue]').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)))
+    boutons.querySelectorAll('[data-vue]').forEach((b, j) => { b.setAttribute('aria-pressed', String(j === i)); b.classList.toggle('selectionne', j === i) })
   }
   function cadrerSur(objets) {
     const b = new THREE.Box3()

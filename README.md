@@ -71,7 +71,7 @@ Attributs posés par le script sur les clones : `data-marque`, `data-vehicule`, 
 - GLB du kit : champ CMS « GLB » (collection Kits), compressé avec `npx gltf-transform meshopt entree.glb sortie.glb`, hébergé dans `assets/` du dépôt (jsDelivr).
 - Dans Blender, les pièces d'une option sont regroupées sous un objet vide `opt-<slug 3D>` (champ « Slug 3D » de l'option, sinon son slug). Tant que ce n'est pas fait, `3d-correspondance.js` relie par nom, comme le prototype.
 - Le bois prend la teinte de la finition (champ « Teinte »). Clic sur le titre d'une option reliée : la caméra la vise (fantôme 3,5 s si non retenue).
-- Classes à styler dans le Designer : `config_scene3d_canvas`, `config_scene3d_vues` (boutons `config_lien` avec `aria-pressed`).
+- Classes (créées dans le Designer le 21/10) : `config_scene3d_canvas`, `config_scene3d_vues`, `config_scene3d_vue` + combo `selectionne` (bouton de vue actif).
 
 ## À venir
 
