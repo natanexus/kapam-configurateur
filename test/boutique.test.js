@@ -43,12 +43,12 @@ const prix = (slug) => document.querySelector(`[data-kit="${slug}"] [data-champ=
 const faux = () => ({ history: { replaceState() {} }, location: { search: '', pathname: '/boutique/kits-amenagement', hash: '' } })
 
 describe('règles de filtrage', () => {
-  it('sans filtre, tous les kits vivants sont visibles avec un prix « à partir de »', () => {
+  it('sans filtre, tous les kits vivants sont visibles avec le prix le plus bas de la grille', () => {
     const f = filtresVides()
     for (const k of c.kits) expect(kitVisible(k, f, c)).toBe(true)
     const p = prixCarte(c.par.kits.get('travel'), f, c)
     expect(p.montant).toBeGreaterThan(0)
-    expect(p.prefixe).toBe('à partir de')
+    expect(p.exact).toBe(false)
   })
   it('un Vito 2 ne propose que le Kit Travel', () => {
     const f = { ...filtresVides(), marque: vito.marque, vehicule: vito.slug }
@@ -58,7 +58,7 @@ describe('règles de filtrage', () => {
     const l2 = trafic.longueurs.find((l) => l.gabarit === 'long')
     const f = { ...filtresVides(), marque: trafic.marque, vehicule: trafic.slug, longueur: l2.slug, finition: ['best'] }
     const ligne = c.grille.find((x) => x.groupe === trafic.groupe && x.kit === 'travel' && x.finition === 'best' && x.gabarit === 'long')
-    expect(prixCarte(c.par.kits.get('travel'), f, c)).toEqual({ montant: ligne.prix, prefixe: '' })
+    expect(prixCarte(c.par.kits.get('travel'), f, c)).toEqual({ montant: ligne.prix, exact: true })
   })
   it('un véhicule sans grille affiche « prix à compléter » et sort du filtre budget', () => {
     const f = { ...filtresVides(), marque: vito.marque, vehicule: vito.slug }

@@ -115,16 +115,17 @@ export function lignesGrille(kit, f, c) {
 export const finitionsDuKit = (kit, f, c) => new Set(lignesGrille(kit, f, c).map((x) => x.finition))
 
 /**
- * Prix affiché sur la carte : { montant, prefixe } ; montant null = « prix à compléter ».
- * Avec véhicule + longueur et une seule finition filtrée : prix exact ; sinon « à partir de » le plus bas.
+ * Prix affiché sur la carte : { montant, exact } ; montant null = « prix à compléter ».
+ * Avec véhicule + longueur et une seule finition filtrée : prix exact ; sinon le plus bas de la grille
+ * (affiché sans « à partir de », comme sur la maquette ; exact = false permet de le savoir).
  */
 export function prixCarte(kit, f, c) {
   let lignes = lignesGrille(kit, f, c)
   if (f.finition.length) lignes = lignes.filter((x) => f.finition.includes(x.finition))
-  if (!lignes.length) return { montant: null, prefixe: '' }
+  if (!lignes.length) return { montant: null, exact: false }
   const prix = lignes.map((x) => x.prix)
   const mini = Math.min(...prix), maxi = Math.max(...prix)
-  return { montant: mini, prefixe: mini === maxi ? '' : 'à partir de' }
+  return { montant: mini, exact: mini === maxi }
 }
 
 /** Nom complet du kit avec le suffixe du groupe de prix (« Kit Travel universel »). */
@@ -251,8 +252,8 @@ export function creerBoutique({ racine, catalogue: c, document: doc = document, 
       montrer(item, !!kit && slugsVisibles.has(slug))
       if (!kit) continue
       texte(el.querySelector('[data-champ="nom"]'), nomCarte(kit, f, c))
-      const { montant, prefixe } = prixCarte(kit, f, c)
-      texte(el.querySelector('[data-champ="prix"]'), num(montant) ? `${prefixe ? prefixe + ' ' : ''}${euros(montant)}` : TEXTES.prixACompleter)
+      const { montant } = prixCarte(kit, f, c)
+      texte(el.querySelector('[data-champ="prix"]'), num(montant) ? euros(montant) : TEXTES.prixACompleter)
       const chip = el.querySelector('[data-champ="chip"]')
       const v = f.vehicule ? c.par.vehicules.get(f.vehicule) : null
       const lg = v?.longueurs.find((x) => x.slug === f.longueur)
