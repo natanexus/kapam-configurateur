@@ -19,14 +19,18 @@ npm run build   # dist/main.js, servi par jsDelivr (tag de version, jamais @main
 | `src/format.js` | Euros (espaces insécables), pluriels, libellés des lignes du devis, récapitulatif texte |
 | `src/etat.js` | localStorage (`kapam.config.v1`, 30 jours), synchronisation entre onglets |
 | `src/vues.js` | `creerApp()` : clone les gabarits, remplit les `data-champ`, pose les états, gère les clics et le formulaire |
+| `src/boutique.js` | Filtres des pages catégorie de la boutique : `kitVisible`, `prixCarte`, `compteur`, `chips`, état ↔ URL, `creerBoutique()` |
+| `src/boutique-main.js` | Point d'entrée des pages boutique (`dist/boutique.js`) : lecture du CMS → `indexer` → `creerBoutique().rendre()` ; expose `window.kapamBoutique` |
 | `src/main.js` | Point d'entrée : lecture du CMS → `indexer` → état → `creerApp().rendre()` ; expose `window.kapamConfigurateur` |
 | `src/3d.js`, `src/3d-correspondance.js` | Scène 3D (three.js, chunk `dist/3d.js` chargé à l'étape 2.1 si le kit a un GLB) ; pièces par objets vides `opt-<slug>`, secours par nom |
 | `scripts/` | `glb-exemple.mjs` (GLB de test), `page-test.mjs` + `fumee.mjs` (`npm run page-test` : page locale + Chromium headless) |
-| `webflow/code-head.html`, `webflow/code-footer.html` | Code à coller dans les paramètres de la page Webflow (style anti-flash, balise script) |
+| `webflow/code-head.html`, `webflow/code-footer.html` | Code à coller dans les paramètres de la page Webflow « Configurateur » (style anti-flash, balise script) |
+| `webflow/boutique-code-head.html`, `webflow/boutique-code-footer.html` | Même chose pour la page « Kits d'aménagement » de la boutique |
 | `test/reference-prototype.js` | Fonctions du prototype recopiées telles quelles (référence) |
 | `test/adaptateur.js` | Catalogue prototype → format CMS, avec les choix de la migration du 20/10 |
 | `test/regles.test.js` | Cas Notion, décisions, 4 000 configurations comparées au prototype, mots interdits |
 | `test/lecture-cms.test.js` | Lecture d'un extrait HTML tel que Webflow le publie |
+| `test/boutique.test.js` | Règles de filtrage (véhicule, finition, budget, compteurs, URL) et parcours sur une page boutique réduite |
 | `test/fixtures/page.html`, `test/vues.test.js` | Copie structurelle de la page Webflow et parcours complet (marque → devis → confirmation) |
 
 ## Écarts volontaires avec le prototype
@@ -76,3 +80,22 @@ Attributs posés par le script sur les clones : `data-marque`, `data-vehicule`, 
 ## À venir
 
 Drawers (résumé, détail d'option, comparateur de kits), nuanciers avec décors quand Willy fournit références et photos, lot mobile.
+
+## Contrat avec la page Webflow « Kits d'aménagement » (/boutique/kits-amenagement)
+
+`dist/boutique.js` partage `lecture-cms.js`, `catalogue.js`, `regles.js` et `format.js` avec le configurateur : même zone `[data-cms-donnees]` (marques, véhicules + kits imbriqués, longueurs, grille, groupes), mêmes attributs.
+
+| Sélecteur | Rôle |
+|---|---|
+| `[data-boutique="kits"]` | Racine (le `container-medium` de la section Filtre) |
+| `[data-carte="kit"] data-kit` | Carte rendue par la liste CMS Config · Kits ; `[data-champ="nom"\|"prix"\|"chip"\|"badge"]` remplis par le script. Le script masque l'item `.w-dyn-item` (`hidden`) et réordonne la liste `[data-liste="kits"]` |
+| `[data-filtre="marque"\|"modele"\|"longueur"]` | Selects en cascade, options construites depuis le catalogue |
+| `[data-filtre="agencement"\|"finition"\|"budget"\|"delai"] [data-valeur]` | Boutons à cocher (classe `selectionne`, `aria-pressed`) ; `[data-champ="compteur"]` = kits visibles si l'on cochait la valeur |
+| `[data-filtre="pose"]` | Interrupteur (`aria-checked`, classe `selectionne` sur `[data-champ="switch"]` et `[data-champ="switch-bouton"]`) |
+| `[data-filtre="recherche"]`, `[data-filtre="tri"]` | Recherche (nom + sous-libellé, sans accents) et tri (pertinence = ordre CMS, prix croissant / décroissant) |
+| `[data-action="plier"]` | Tête d'accordéon : bascule `hidden` sur `.boutique_groupe_corps` et le signe `+`/`−` |
+| `[data-action="tout-effacer"]`, `[data-action="filtres"]`, `[data-action="retirer"]` | Tout effacer, afficher/masquer le rail, chip × |
+| `[data-liste="chips"]`, `[data-champ="etat-filtres"\|"compteur"\|"compteur-haut"]` | Filtres actifs et compteurs |
+| `[data-bloc="aucun-resultat"] [data-champ="justification"]` | Bloc vide, phrase construite depuis les filtres |
+
+Règles : un kit est visible s'il est proposé sur le véhicule (ou l'un des véhicules de la marque) choisi, et s'il a au moins une ligne de grille dans les finitions cochées. Prix de la carte : prix exact quand véhicule + longueur + une finition sont connus, sinon « à partir de » le plus bas de la grille dans le périmètre, sinon « prix à compléter » (véhicule sans grille). Le filtre Budget compare sur ce prix et exclut les prix inconnus. Délai et Pose n'ont pas de données pour les kits : les groupes restent masqués. Les filtres sont recopiés dans l'URL (`?marque=…&modele=…&longueur=…&agencement=…&finition=…&budget=…&tri=…&q=…`).

@@ -5,8 +5,8 @@ export default defineConfig({
     outDir: 'dist',
     target: 'es2022',
     rollupOptions: {
-      input: 'src/main.js',
-      output: { entryFileNames: 'main.js', chunkFileNames: '[name].js' },
+      input: { main: 'src/main.js', boutique: 'src/boutique-main.js' },
+      output: { entryFileNames: '[name].js', chunkFileNames: '[name].js' },
     },
   },
   // En dev, la page publiée sur webflow.io charge http://localhost:5173/src/main.js
