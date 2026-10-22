@@ -9,7 +9,7 @@
  *   [data-select] > [data-champ="libelle-select"] + select   boîte visible d'un select (texte recopié, classe desactive)
  *   [data-filtre="…"]                 contrôles : recherche, marque, modele, longueur (select),
  *                                     agencement, finition, budget, delai (boutons data-valeur), pose (switch), tri
- *   [data-groupe="…"] > [data-action="plier"] + .boutique_groupe_corps   accordéons
+ *   [data-groupe="…"] > [data-action="plier"] + .boutique_groupe_corps   accordéons, tous fermés au chargement (« + » fermé, « − » ouvert)
  *   [data-liste="chips"]              chips des filtres actifs
  *   [data-champ="compteur"|"compteur-haut"|"etat-filtres"]
  *   [data-bloc="aucun-resultat"]      bloc vide, [data-champ="justification"]
@@ -211,6 +211,7 @@ export function retirer(f, filtre, valeur) {
 
 /* -------------------------------------------------------------- vues --- */
 
+export const ICONE_OUVERT = '−', ICONE_FERME = '+'
 const texte = (el, s) => { if (el) el.textContent = s ?? '' }
 const montrer = (el, oui) => { if (el) el.toggleAttribute('hidden', !oui) }
 
@@ -335,6 +336,22 @@ export function creerBoutique({ racine, catalogue: c, document: doc = document, 
     racine.dispatchEvent(new CustomEvent('kapam:boutique', { bubbles: true, detail: { filtres: { ...f }, visibles: visibles.map((k) => k.slug) } }))
   }
 
+  /**
+   * Ouvre ou ferme un groupe du rail. L'état vient de aria-expanded (une seule source) ;
+   * le corps est masqué par hidden ET display:none en ligne, pour ne pas dépendre du style du head
+   * (sinon le display:flex de la classe gagne et le corps reste visible sous un « + »).
+   */
+  function plier(groupe, ouvert) {
+    if (!groupe) return
+    const tete = groupe.querySelector(':scope > [data-action="plier"]')
+    const corps = groupe.querySelector(':scope > .boutique_groupe_corps')
+    tete?.setAttribute('aria-expanded', String(ouvert))
+    texte(tete?.querySelector('.boutique_groupe_icone'), ouvert ? ICONE_OUVERT : ICONE_FERME)
+    if (corps) { corps.hidden = !ouvert; corps.style.display = ouvert ? '' : 'none' }
+  }
+  // Au chargement, tous les groupes sont fermés.
+  for (const g of qa('[data-groupe]')) plier(g, false)
+
   function changer(g) { f = { ...f, ...g }; rendre() }
 
   /* ---- interactions ---- */
@@ -359,14 +376,7 @@ export function creerBoutique({ racine, catalogue: c, document: doc = document, 
     const { action, filtre, valeur } = el.dataset
     if (action === 'retirer') return changer(retirer(f, filtre, valeur))
     if (action === 'tout-effacer') return changer({ ...filtresVides(), tri: f.tri })
-    if (action === 'plier') {
-      const corps = el.parentElement.querySelector('.boutique_groupe_corps')
-      const ouvert = corps?.hasAttribute('hidden')
-      montrer(corps, ouvert)
-      el.setAttribute('aria-expanded', String(!!ouvert))
-      texte(el.querySelector('.boutique_groupe_icone'), ouvert ? '−' : '+')
-      return
-    }
+    if (action === 'plier') return plier(el.closest('[data-groupe]'), el.getAttribute('aria-expanded') !== 'true')
     if (action === 'filtres') {
       const rail = q('[data-rail]'); const cache = rail?.hasAttribute('hidden')
       montrer(rail, cache); el.setAttribute('aria-expanded', String(!!cache)); return

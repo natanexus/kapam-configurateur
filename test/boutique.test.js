@@ -129,10 +129,28 @@ describe('page Webflow', () => {
     const ordre = [...document.querySelectorAll('[data-liste="kits"] [data-carte]')].map((el) => el.dataset.kit)
     const montants = ordre.map((s) => prixCarte(c.par.kits.get(s), app.filtres, c).montant).filter((x) => x != null)
     expect([...montants].sort((a, b) => b - a)).toEqual(montants)
+    // Tous fermés au chargement, même le groupe véhicule ouvert dans le HTML.
+    for (const g of document.querySelectorAll('[data-groupe]')) {
+      const t = g.querySelector('[data-action="plier"]'), corps = g.querySelector('.boutique_groupe_corps')
+      if (!t) continue
+      expect(t.getAttribute('aria-expanded')).toBe('false')
+      expect(t.querySelector('.boutique_groupe_icone').textContent).toBe('+')
+      expect(corps.hidden).toBe(true)
+      expect(corps.style.display).toBe('none')
+    }
     const tete = document.querySelector('[data-groupe="agencement"] [data-action="plier"]')
+    const corps = document.querySelector('[data-groupe="agencement"] .boutique_groupe_corps')
+    const icone = tete.querySelector('.boutique_groupe_icone')
     tete.click()
-    expect(document.querySelector('[data-groupe="agencement"] .boutique_groupe_corps').hasAttribute('hidden')).toBe(false)
-    expect(tete.getAttribute('aria-expanded')).toBe('true')
+    expect([tete.getAttribute('aria-expanded'), icone.textContent, corps.hidden, corps.style.display]).toEqual(['true', '−', false, ''])
+    icone.click()   // clic sur l'icône elle-même
+    expect([tete.getAttribute('aria-expanded'), icone.textContent, corps.hidden, corps.style.display]).toEqual(['false', '+', true, 'none'])
+    tete.click()
+    expect(icone.textContent).toBe('−')
+    // Un rendu (filtre changé) ne touche pas à l'état des groupes.
+    app.changer({ recherche: 'tra' })
+    expect(icone.textContent).toBe('−')
+    expect(corps.hidden).toBe(false)
   })
   it('lit les filtres depuis l\'URL au chargement', () => {
     const app = creerBoutique({ racine: document.querySelector('[data-boutique]'), catalogue: c, document, history: { replaceState() {} }, location: { search: `?marque=${vito.marque}&modele=${vito.slug}`, pathname: '/x', hash: '' } })

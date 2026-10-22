@@ -93,7 +93,7 @@ Drawers (résumé, détail d'option, comparateur de kits), nuanciers avec décor
 | `[data-filtre="agencement"\|"finition"\|"budget"\|"delai"] [data-valeur]` | Boutons à cocher (classe `selectionne`, `aria-pressed`) ; `[data-champ="compteur"]` = kits visibles si l'on cochait la valeur |
 | `[data-filtre="pose"]` | Interrupteur (`aria-checked`, classe `selectionne` sur `[data-champ="switch"]` et `[data-champ="switch-bouton"]`) |
 | `[data-filtre="recherche"]`, `[data-filtre="tri"]` | Recherche (nom + sous-libellé, sans accents) et tri (pertinence = ordre CMS, prix croissant / décroissant) |
-| `[data-action="plier"]` | Tête d'accordéon : bascule `hidden` sur `.boutique_groupe_corps` et le signe `+`/`−` |
+| `[data-action="plier"]` | Tête d'accordéon. Tous les groupes sont fermés au chargement. État lu dans `aria-expanded` ; le corps `:scope > .boutique_groupe_corps` est masqué par `hidden` + `display:none` en ligne (indépendant du style du head) ; icône `+` fermé, `−` ouvert |
 | `[data-action="tout-effacer"]`, `[data-action="filtres"]`, `[data-action="retirer"]` | Tout effacer, afficher/masquer le rail, chip × |
 | `[data-liste="chips"]`, `[data-champ="etat-filtres"\|"compteur"\|"compteur-haut"]` | Filtres actifs et compteurs |
 | `[data-bloc="aucun-resultat"] [data-champ="justification"]` | Bloc vide, phrase construite depuis les filtres |
