@@ -25,8 +25,8 @@ function page() {
     <aside data-rail><span data-champ="compteur"></span><button data-action="tout-effacer"></button>
       <input data-filtre="recherche">
       <div data-groupe="vehicule"><button data-action="plier"><span>Votre véhicule</span><span class="boutique_groupe_icone">−</span></button><div class="boutique_groupe_corps">
-        <select data-filtre="marque"><option value="">Marque</option></select>
-        <select data-filtre="modele" disabled><option value="">Modèle</option></select>
+        <div data-select="marque" class="boutique_select"><span data-champ="libelle-select">Marque</span><img><select data-filtre="marque"><option value="">Marque</option></select></div>
+        <div data-select="modele" class="boutique_select desactive"><span data-champ="libelle-select">Modèle</span><img><select data-filtre="modele" disabled><option value="">Modèle</option></select></div>
         <select data-filtre="longueur" disabled><option value="">Longueur</option></select></div></div>
       <div data-groupe="agencement"><button data-action="plier"><span>Agencement</span><span class="boutique_groupe_icone">+</span></button><div class="boutique_groupe_corps" hidden>${opt('agencement', c.kits)}</div></div>
       <div data-groupe="finition"><div class="boutique_groupe_corps" hidden>${opt('finition', c.finitions)}</div></div>
@@ -99,7 +99,10 @@ describe('page Webflow', () => {
     marque.value = 'renault'; marque.dispatchEvent(new Event('change', { bubbles: true }))
     const modele = document.querySelector('[data-filtre="modele"]')
     expect(modele.disabled).toBe(false)
+    expect(document.querySelector('[data-select="marque"] [data-champ="libelle-select"]').textContent).toBe(c.par.marques.get('renault').nom)
+    expect(document.querySelector('[data-select="modele"]').classList.contains('desactive')).toBe(false)
     modele.value = trafic.slug; modele.dispatchEvent(new Event('change', { bubbles: true }))
+    expect(document.querySelector('[data-select="modele"] [data-champ="libelle-select"]').textContent).toContain('Trafic 3')
     expect(visibles()).not.toContain('combi')
     expect(document.querySelector('[data-kit="travel"] [data-champ="chip"]').textContent).toBe('Trafic 3')
     expect(document.querySelector('[data-liste="chips"]').children).toHaveLength(2)

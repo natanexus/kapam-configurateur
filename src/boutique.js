@@ -6,6 +6,7 @@
  * Contrat avec la page Webflow (attributs) :
  *   [data-boutique="kits"]            racine
  *   [data-carte="kit"] data-kit=…     carte d'un kit ; [data-champ="prix"|"chip"|"badge"|"nom"]
+ *   [data-select] > [data-champ="libelle-select"] + select   boîte visible d'un select (texte recopié, classe desactive)
  *   [data-filtre="…"]                 contrôles : recherche, marque, modele, longueur (select),
  *                                     agencement, finition, budget, delai (boutons data-valeur), pose (switch), tri
  *   [data-groupe="…"] > [data-action="plier"] + .boutique_groupe_corps   accordéons
@@ -233,6 +234,12 @@ export function creerBoutique({ racine, catalogue: c, document: doc = document, 
     for (const { valeur: v, libelle } of options) { const o = doc.createElement('option'); o.value = v; o.textContent = libelle; select.append(o) }
     select.value = options.some((o) => o.valeur === valeur) ? valeur : ''
     select.disabled = !options.length
+    // Boîte visible (texte + chevron) autour du select natif transparent.
+    const boite = select.closest('[data-select]')
+    if (boite) {
+      texte(boite.querySelector('[data-champ="libelle-select"]'), select.selectedOptions[0]?.textContent ?? o0.textContent)
+      boite.classList.toggle('desactive', select.disabled)
+    }
   }
   function rendreSelects() {
     const marques = c.marques.filter((m) => c.vehicules.some((v) => v.marque === m.slug && vivant(v)))

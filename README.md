@@ -89,7 +89,7 @@ Drawers (résumé, détail d'option, comparateur de kits), nuanciers avec décor
 |---|---|
 | `[data-boutique="kits"]` | Racine (le `container-medium` de la section Filtre) |
 | `[data-carte="kit"] data-kit` | Carte rendue par la liste CMS Config · Kits ; `[data-champ="nom"\|"prix"\|"chip"\|"badge"]` remplis par le script. Le script masque l'item `.w-dyn-item` (`hidden`) et réordonne la liste `[data-liste="kits"]` |
-| `[data-filtre="marque"\|"modele"\|"longueur"]` | Selects en cascade, options construites depuis le catalogue |
+| `[data-filtre="marque"\|"modele"\|"longueur"]` | Selects en cascade, options construites depuis le catalogue. Chaque select natif (classe `boutique_select_natif`) est transparent, posé sur sa boîte `[data-select]` (classe `boutique_select`) : le script recopie l'option choisie dans `[data-champ="libelle-select"]` et pose la classe `desactive` quand le select est désactivé |
 | `[data-filtre="agencement"\|"finition"\|"budget"\|"delai"] [data-valeur]` | Boutons à cocher (classe `selectionne`, `aria-pressed`) ; `[data-champ="compteur"]` = kits visibles si l'on cochait la valeur |
 | `[data-filtre="pose"]` | Interrupteur (`aria-checked`, classe `selectionne` sur `[data-champ="switch"]` et `[data-champ="switch-bouton"]`) |
 | `[data-filtre="recherche"]`, `[data-filtre="tri"]` | Recherche (nom + sous-libellé, sans accents) et tri (pertinence = ordre CMS, prix croissant / décroissant) |
