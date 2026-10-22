@@ -63,6 +63,26 @@ export const tranche = (v) => {
 
 /* --------------------------------------------------------- catalogue --- */
 
+/**
+ * La page n'a pas de liste cachée pour les kits ni les finitions : la grille et le rail les portent déjà.
+ * Complète le catalogue brut (avant indexer) depuis les cartes [data-carte="kit"] et les boutons [data-filtre="finition"].
+ */
+export function completerDepuisPage(brut, racine) {
+  if (!brut.kits?.length) {
+    brut.kits = [...racine.querySelectorAll('[data-carte="kit"]')].map((el, i) => ({
+      slug: el.dataset.kit, nom: el.dataset.nom || el.querySelector('[data-champ="nom"]')?.textContent.trim() || el.dataset.kit,
+      sousLibelle: el.dataset.sousLibelle || null, badge: el.dataset.badge || null,
+      statut: slugifier(el.dataset.statut || 'a-valider'), ordre: i + 1,
+    })).filter((k) => k.slug)
+  }
+  if (!brut.finitions?.length) {
+    brut.finitions = [...racine.querySelectorAll('[data-filtre="finition"][data-valeur]')].map((el, i) => ({
+      slug: el.dataset.valeur, nom: el.querySelector('[data-champ="libelle"]')?.textContent.trim() || el.dataset.valeur, ordre: i + 1, statut: 'a-valider',
+    }))
+  }
+  return brut
+}
+
 const vivant = (x) => x.statut !== 'retire' && x.statut !== 'a-creer'
 
 /** Véhicules concernés par le filtre véhicule : un seul, ceux de la marque, ou aucun (tous). */

@@ -5,7 +5,7 @@ import SRC from '../src/boutique.js?raw'
 import { normaliser, versCms } from './adaptateur.js'
 import { indexer } from '../src/catalogue.js'
 import {
-  creerBoutique, filtresVides, filtresDepuisUrl, filtresVersUrl, kitVisible, prixCarte, compteur, chips, retirer, tranche,
+  creerBoutique, completerDepuisPage, filtresVides, filtresDepuisUrl, filtresVersUrl, kitVisible, prixCarte, compteur, chips, retirer, tranche,
 } from '../src/boutique.js'
 
 const c = indexer(versCms(normaliser(extrait)))
@@ -136,6 +136,19 @@ describe('page Webflow', () => {
     app.rendre()
     expect(visibles()).toEqual(['travel'])
     expect(prix('travel')).toBe('prix à compléter')
+  })
+})
+
+describe('lecture de la page', () => {
+  it('complète les kits et finitions absents de la zone cachée depuis les cartes et le rail', () => {
+    page()
+    const brut = completerDepuisPage({ kits: [], finitions: [] }, document.querySelector('[data-boutique]'))
+    expect(brut.kits.map((k) => k.slug)).toEqual(c.kits.map((k) => k.slug))
+    expect(brut.kits[0]).toMatchObject({ nom: c.kits[0].nom, statut: 'a-valider', ordre: 1 })
+    expect(brut.finitions.map((f) => f.slug)).toEqual(c.finitions.map((f) => f.slug))
+    expect(brut.finitions[0].nom).toBe(c.finitions[0].nom)
+    const deja = completerDepuisPage({ kits: [{ slug: 'x' }], finitions: [{ slug: 'y' }] }, document.querySelector('[data-boutique]'))
+    expect(deja.kits).toEqual([{ slug: 'x' }])
   })
 })
 
