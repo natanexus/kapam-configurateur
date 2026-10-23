@@ -5,7 +5,7 @@ export default defineConfig({
     outDir: 'dist',
     target: 'es2022',
     rollupOptions: {
-      input: { main: 'src/main.js', boutique: 'src/boutique-main.js' },
+      input: { main: 'src/main.js', boutique: 'src/boutique-main.js', site: 'src/devis-main.js' },
       output: { entryFileNames: '[name].js', chunkFileNames: '[name].js' },
     },
   },

@@ -20,6 +20,8 @@ npm run build   # dist/main.js, servi par jsDelivr (tag de version, jamais @main
 | `src/etat.js` | localStorage (`kapam.config.v1`, 30 jours), synchronisation entre onglets |
 | `src/vues.js` | `creerApp()` : clone les gabarits, remplit les `data-champ`, pose les états, gère les clics et le formulaire |
 | `src/boutique.js` | Filtres des pages catégorie de la boutique : `kitVisible`, `prixCarte`, `compteur`, `chips`, état ↔ URL, `creerBoutique()` |
+| `src/devis.js`                                                         | Modale « Demander un devis » (composant Footer, toutes les pages) : hub des formules, aide au choix, présentation, formulaires, confirmation ; `lireFormules`, `recommander`, `creerDevis` |
+| `src/devis-main.js`                                                    | Point d'entrée du code du site (`dist/site.js`) : lecture de `[data-devis-donnees]` → `creerDevis().rendre()` ; expose `window.kapamDevis` |
 | `src/boutique-main.js` | Point d'entrée des pages boutique (`dist/boutique.js`) : lecture du CMS → `indexer` → `creerBoutique().rendre()` ; expose `window.kapamBoutique` |
 | `src/main.js` | Point d'entrée : lecture du CMS → `indexer` → état → `creerApp().rendre()` ; expose `window.kapamConfigurateur` |
 | `src/3d.js`, `src/3d-correspondance.js` | Scène 3D (three.js, chunk `dist/3d.js` chargé à l'étape 2.1 si le kit a un GLB) ; pièces par objets vides `opt-<slug>`, secours par nom |
@@ -30,6 +32,7 @@ npm run build   # dist/main.js, servi par jsDelivr (tag de version, jamais @main
 | `test/adaptateur.js` | Catalogue prototype → format CMS, avec les choix de la migration du 20/10 |
 | `test/regles.test.js` | Cas Notion, décisions, 4 000 configurations comparées au prototype, mots interdits |
 | `test/lecture-cms.test.js` | Lecture d'un extrait HTML tel que Webflow le publie |
+| `test/devis.test.js`, `test/fixtures/devis.html`                      | Modale de devis : lecture des formules, recommandation, parcours, formulaires en cascade, configuration jointe, confirmation, mots interdits |
 | `test/boutique.test.js` | Règles de filtrage (véhicule, finition, budget, compteurs, URL) et parcours sur une page boutique réduite |
 | `test/fixtures/page.html`, `test/vues.test.js` | Copie structurelle de la page Webflow et parcours complet (marque → devis → confirmation) |
 

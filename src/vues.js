@@ -403,8 +403,10 @@ export function creerApp({ document: doc, catalogue: cat, etat: etat0, sauver = 
     if (etat.etape === 3 && !(v() && R.longueur(etat, cat))) etat.etape = v() ? 2 : etat.marque ? 1 : 0
     if (etat.etape === 4 && !etat.demande && !R.etapeComplete({ ...etat, etape: 3 }, cat)) etat.etape = 3
     etat = R.nettoyer(etat, cat)
-    sauver(etat)
     const d = R.devis(etat, cat)
+    // Résumé lu par la modale de devis (autres pages) : récapitulatif texte et total.
+    etat.resume = d.lignes.length ? { recap: recapTexte(d), total: d.total, vehicule: v() ? nomVehicule(v()) : null } : null
+    sauver(etat)
     const focus = cleFocus(doc.activeElement)
     rendreEtapes(); rendre11(); rendre12(); rendre13(); rendre21(d); rendre31(d); rendreBarre(d)
     if (focus) $(focus, racine)?.focus?.({ preventScroll: true })

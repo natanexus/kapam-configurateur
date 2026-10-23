@@ -1,0 +1,7 @@
+<!-- Paramètres du site → Custom code → Head code (toutes les pages) -->
+<style>
+  /* La modale de devis (composant Footer) : hidden gagne sur les display des classes Client First. */
+  [data-devis][hidden], [data-devis] [hidden], [data-devis] [data-gabarits], [data-devis-donnees] { display: none !important; }
+  /* Page figée pendant que la modale est ouverte. */
+  html.devis-ouverte { overflow: hidden; }
+</style>

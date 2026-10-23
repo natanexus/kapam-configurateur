@@ -1,0 +1,217 @@
+<!-- Copie structurelle du composant Footer « Modale devis » (attributs data-*, sans les styles). Contrat : webflow/devis-structure.md -->
+<nav><a href="#" class="btn-devis-nav">Demander un devis</a><a href="#" class="btn-devis-nav">Mon devis (0)</a></nav>
+<main><button type="button" data-devis-ouvrir data-devis-formule="atelier">Demander un devis Atelier</button></main>
+
+<div class="devis_overlay" data-devis hidden>
+  <div class="devis_boite" data-devis-boite role="dialog" aria-modal="true">
+    <button type="button" class="devis_fermer" data-action="fermer" aria-label="Fermer">×</button>
+
+    <section class="devis_vue" data-vue="hub">
+      <h2>Quel aménagement correspond à votre projet ?</h2>
+      <p>Trois formules selon que vous avez déjà votre van, et selon votre envie de mettre les mains dedans.</p>
+      <div class="devis_cartes" data-liste="formules"></div>
+      <div class="devis_aide"><h3>Pas encore décidé ?</h3><p>Répondez à 2 questions pour être orienté.</p>
+        <button type="button" class="button is-secondary" data-action="aide">Aidez-moi à choisir</button></div>
+    </section>
+
+    <section class="devis_vue" data-vue="q1" hidden>
+      <span class="devis_eyebrow">Question 1 / 2</span><h2>Avez-vous déjà votre van ?</h2>
+      <button type="button" class="devis_reponse" data-reponse="van:oui" aria-pressed="false">Oui, j'ai mon van</button>
+      <button type="button" class="devis_reponse" data-reponse="van:non" aria-pressed="false">Non, je n'ai pas encore de van</button>
+    </section>
+    <section class="devis_vue" data-vue="q2" hidden>
+      <span class="devis_eyebrow">Question 2 / 2</span><h2>Souhaitez-vous installer le kit vous-même ?</h2>
+      <button type="button" class="devis_reponse" data-reponse="pose:soi-meme" aria-pressed="false">Oui, j'installe moi-même</button>
+      <button type="button" class="devis_reponse" data-reponse="pose:kapam" aria-pressed="false">Non, je préfère confier l'installation à Kapam</button>
+      <button type="button" class="devis_lien" data-action="precedent">Retour</button>
+    </section>
+    <section class="devis_vue" data-vue="reco" hidden>
+      <h2>Notre recommandation</h2>
+      <div class="devis_cartes" data-liste="recommandee"></div>
+      <p>Vous pouvez aussi explorer :</p>
+      <div class="devis_cartes" data-liste="autres"></div>
+    </section>
+
+    <section class="devis_vue" data-vue="presentation" hidden>
+      <span class="devis_eyebrow" data-champ="etiquette"></span><h2 data-champ="nom"></h2>
+      <p data-champ="description"></p>
+      <h3>Ce que comprend l'offre</h3><ul class="devis_lignes" data-liste="inclus"></ul>
+      <div data-bloc="exclus"><h3>Ce que ça ne comprend pas</h3><ul class="devis_lignes" data-liste="exclus"></ul></div>
+      <h3>Le process en <span data-champ="nb-etapes"></span> étapes</h3><ol class="devis_lignes" data-liste="etapes"></ol>
+      <p class="devis_tarif" data-champ="tarif"></p><p class="devis_mention" data-champ="mention">Prix à confirmer</p>
+      <button type="button" class="button" data-action="formulaire">Demander un devis</button>
+      <button type="button" class="devis_lien" data-action="hub">Voir les autres formules</button>
+    </section>
+
+    <section class="devis_vue" data-vue="formulaire" hidden>
+      <span class="devis_eyebrow">Demande de devis</span><h2 data-champ="nom"></h2>
+
+      <div class="w-form" data-formulaire="cle-en-main">
+        <form id="devis-cle-en-main" name="Devis Clé en main" method="post">
+          <input type="hidden" name="formule" data-champ-form="formule"><input type="hidden" name="recap" data-champ-form="recap"><input type="hidden" name="configuration" data-champ-form="configuration">
+          <input name="nom" required placeholder="Votre nom"><input name="prenom" required placeholder="Votre prénom">
+          <input type="email" name="email" required><input type="tel" name="telephone" required><input name="code-postal" required>
+          <input name="vehicule-envisage" data-champ="vehicule-envisage" placeholder="Véhicule envisagé">
+          <fieldset><legend>Usage principal</legend>
+            <label data-chip><input type="radio" name="usage" value="longue-duree"><span data-champ="titre">Usage régulier longue durée</span></label>
+            <label data-chip><input type="radio" name="usage" value="week-ends"><span data-champ="titre">Week-ends &amp; vacances</span></label>
+            <label data-chip><input type="radio" name="usage" value="fulltime"><span data-champ="titre">Fulltime</span></label>
+            <label data-chip><input type="radio" name="usage" value="pro"><span data-champ="titre">Usage pro</span></label></fieldset>
+          <fieldset><legend>Nombre d'occupants</legend>
+            <label data-chip><input type="radio" name="occupants" value="1"><span data-champ="titre">1</span></label>
+            <label data-chip><input type="radio" name="occupants" value="2"><span data-champ="titre">2</span></label>
+            <label data-chip><input type="radio" name="occupants" value="3+"><span data-champ="titre">3 et +</span></label></fieldset>
+          <fieldset data-bloc="finitions"><legend>Niveau de finition souhaité</legend><div data-liste="finitions"></div></fieldset>
+          <fieldset><legend>Équipements indispensables</legend>
+            <label data-chip><input type="checkbox" name="equipements" value="douche"><span data-champ="titre">Douche</span></label>
+            <label data-chip><input type="checkbox" name="equipements" value="wc"><span data-champ="titre">WC</span></label>
+            <label data-chip><input type="checkbox" name="equipements" value="chauffage"><span data-champ="titre">Chauffage</span></label>
+            <label data-chip><input type="checkbox" name="equipements" value="solaire"><span data-champ="titre">Panneau solaire</span></label>
+            <label data-chip><input type="checkbox" name="equipements" value="frigo"><span data-champ="titre">Frigo</span></label>
+            <label data-chip><input type="checkbox" name="equipements" value="television"><span data-champ="titre">Télévision</span></label>
+            <label data-chip><input type="checkbox" name="equipements" value="cuisine"><span data-champ="titre">Cuisine intégrée</span></label></fieldset>
+          <fieldset><legend>Homologation VASP souhaitée ?</legend>
+            <label data-chip><input type="radio" name="vasp" value="oui"><span data-champ="titre">Oui</span></label>
+            <label data-chip><input type="radio" name="vasp" value="non"><span data-champ="titre">Non</span></label>
+            <label data-chip><input type="radio" name="vasp" value="je-ne-sais-pas"><span data-champ="titre">Je ne sais pas</span></label></fieldset>
+          <fieldset><legend>Budget envisagé</legend>
+            <label data-chip><input type="radio" name="budget" value="25-35k"><span data-champ="titre">25–35k €</span></label>
+            <label data-chip><input type="radio" name="budget" value="35-50k"><span data-champ="titre">35–50k €</span></label>
+            <label data-chip><input type="radio" name="budget" value="50k+"><span data-champ="titre">50k+ €</span></label></fieldset>
+          <input name="date-livraison" placeholder="Date idéale de livraison"><textarea name="message"></textarea>
+          <div data-bloc="joindre"><label><input type="checkbox" name="joindre-configuration" data-champ-form="joindre">Joindre ma configuration (<span data-champ="config-vehicule"></span> · <span data-champ="config-total"></span>)</label></div>
+          <label><input type="checkbox" name="consentement" required>J'accepte que Kapam utilise mes données pour répondre à ma demande.</label>
+          <button type="submit" class="button">Envoyer ma demande</button>
+          <p class="devis_mention">Réponse sous 48h · Devis gratuit · Sans engagement</p>
+        </form>
+        <div class="w-form-done" style="display:none"></div><div class="w-form-fail" style="display:none"></div>
+      </div>
+
+      <div class="w-form" data-formulaire="atelier">
+        <form id="devis-atelier" name="Devis Atelier" method="post">
+          <input type="hidden" name="formule" data-champ-form="formule"><input type="hidden" name="recap" data-champ-form="recap"><input type="hidden" name="configuration" data-champ-form="configuration">
+          <input name="nom" required><input name="prenom" required><input type="email" name="email" required><input type="tel" name="telephone" required><input name="code-postal" required>
+          <select name="marque" data-champ="select-marque" required><option value="">Sélectionnez la marque</option></select>
+          <select name="modele" data-champ="select-modele" required><option value="">Sélectionnez le modèle</option></select>
+          <input name="annee" placeholder="Année du véhicule">
+          <fieldset data-bloc="longueurs"><legend>Longueur</legend><div data-liste="longueurs"></div></fieldset>
+          <fieldset data-bloc="kits"><legend>Kit souhaité</legend><div data-liste="kits"></div></fieldset>
+          <fieldset data-bloc="finitions"><legend>Niveau de finition</legend><div data-liste="finitions"></div></fieldset>
+          <fieldset><legend>Homologation VASP souhaitée ?</legend>
+            <label data-chip><input type="radio" name="vasp" value="oui"><span data-champ="titre">Oui</span></label>
+            <label data-chip><input type="radio" name="vasp" value="non"><span data-champ="titre">Non</span></label>
+            <label data-chip><input type="radio" name="vasp" value="je-ne-sais-pas"><span data-champ="titre">Je ne sais pas</span></label></fieldset>
+          <fieldset><legend>Équipements souhaités</legend>
+            <label data-chip><input type="checkbox" name="equipements" value="douche"><span data-champ="titre">Douche</span></label>
+            <label data-chip><input type="checkbox" name="equipements" value="wc"><span data-champ="titre">WC</span></label></fieldset>
+          <input name="periode" placeholder="Période souhaitée pour l'intervention"><textarea name="message"></textarea>
+          <div data-bloc="joindre"><label><input type="checkbox" name="joindre-configuration" data-champ-form="joindre">Joindre ma configuration (<span data-champ="config-vehicule"></span> · <span data-champ="config-total"></span>)</label></div>
+          <label><input type="checkbox" name="consentement" required>J'accepte que Kapam utilise mes données pour répondre à ma demande.</label>
+          <button type="submit" class="button">Envoyer ma demande</button>
+        </form>
+        <div class="w-form-done" style="display:none"></div><div class="w-form-fail" style="display:none"></div>
+      </div>
+
+      <div class="w-form" data-formulaire="kit-diy">
+        <form id="devis-kit-diy" name="Devis Kit DIY" method="post">
+          <input type="hidden" name="formule" data-champ-form="formule"><input type="hidden" name="recap" data-champ-form="recap"><input type="hidden" name="configuration" data-champ-form="configuration">
+          <input name="nom" required><input name="prenom" required><input type="email" name="email" required><input type="tel" name="telephone" required><input name="code-postal" required>
+          <select name="marque" data-champ="select-marque" required><option value="">Sélectionnez la marque</option></select>
+          <select name="modele" data-champ="select-modele" required><option value="">Sélectionnez le modèle</option></select>
+          <input name="annee">
+          <fieldset data-bloc="longueurs"><legend>Longueur</legend><div data-liste="longueurs"></div></fieldset>
+          <fieldset data-bloc="kits"><legend>Kit souhaité</legend><div data-liste="kits"></div></fieldset>
+          <fieldset data-bloc="finitions"><legend>Niveau de finition</legend><div data-liste="finitions"></div></fieldset>
+          <input name="date-livraison"><textarea name="message"></textarea>
+          <div data-bloc="joindre"><label><input type="checkbox" name="joindre-configuration" data-champ-form="joindre">Joindre ma configuration</label></div>
+          <label><input type="checkbox" name="consentement" required>J'accepte…</label>
+          <button type="submit" class="button">Envoyer ma demande</button>
+        </form>
+        <div class="w-form-done" style="display:none"></div><div class="w-form-fail" style="display:none"></div>
+      </div>
+      <button type="button" class="devis_lien" data-action="precedent">Retour</button>
+    </section>
+
+    <section class="devis_vue" data-vue="confirmation" hidden>
+      <span class="devis_eyebrow">Demande envoyée</span><h2>Bien reçu !</h2>
+      <p data-champ="message"></p>
+      <div class="devis_rdv" data-bloc="rdv">
+        <p>Pour avancer plus vite, réservez directement un appel de <span data-champ="duree"></span> minutes.</p>
+        <a class="button" data-action="calcom" href="#" target="_blank" rel="noopener">Réserver un créneau</a>
+      </div>
+    </section>
+  </div>
+
+  <div class="hide" data-gabarits>
+    <div class="devis_carte" data-gabarit="carte-formule">
+      <span class="devis_eyebrow" data-champ="etiquette"></span><h3 data-champ="nom"></h3><p data-champ="accroche"></p>
+      <p class="devis_tarif" data-champ="tarif"></p><span class="devis_mention" data-champ="mention">Prix à confirmer</span>
+      <button type="button" class="button" data-action="presentation">Découvrir cette formule</button>
+    </div>
+    <li class="devis_ligne" data-gabarit="ligne"><span data-champ="numero"></span><span data-champ="titre"></span></li>
+    <label class="devis_chip" data-gabarit="chip"><input type="radio"><span data-champ="titre"></span></label>
+  </div>
+
+  <div class="hide" data-devis-donnees aria-hidden="true">
+    <div class="w-dyn-list"><div role="list" class="w-dyn-items">
+      <div role="listitem" class="w-dyn-item"><div data-item="formules" data-slug="cle-en-main" data-nom="Clé en main" data-ordre="1" data-etiquette="VÉHICULE + KIT + INSTALLATION"
+        data-accroche="Vous n'avez pas encore de van ? On s'occupe de tout." data-prix="25000" data-delai="6 à 12 semaines selon le projet" data-bouton="Demander un devis Clé en main" data-duree="30" data-statut="À valider">
+        <div data-champ="description">Vous n'avez pas encore de van ? On s'occupe de tout, du sourcing du véhicule à la livraison clés en main.</div>
+        <div data-champ="inclus">Sourcing du véhicule
+Fabrication du kit sur-mesure
+Installation en atelier
+Homologation VASP si nécessaire</div>
+        <div data-champ="exclus"></div>
+        <div data-champ="etapes">Échange de cadrage
+Choix du véhicule et de la configuration
+Fabrication &amp; installation
+Livraison</div>
+        <div data-champ="confirmation">Votre demande a bien été reçue. Un membre de l'équipe Kapam vous contactera sous 48h ouvrées pour organiser un premier échange.</div>
+        <a data-champ="calcom" href="#" class="w-dyn-bind-empty"></a></div></div>
+      <div role="listitem" class="w-dyn-item"><div data-item="formules" data-slug="atelier" data-nom="Atelier" data-ordre="2" data-etiquette="KIT + INSTALLATION"
+        data-accroche="Vous avez déjà votre van et on s'occupe de l'aménager dans notre atelier." data-prix="5000" data-delai="1 à 2 semaines en atelier selon la configuration" data-bouton="Demander un devis Atelier" data-duree="15" data-statut="Validé">
+        <div data-champ="description">Vous avez déjà votre van : on s'occupe de l'aménagement en atelier.</div>
+        <div data-champ="inclus">Vous amenez votre van à l'atelier de Bordeaux
+Kapam installe votre kit complet</div>
+        <div data-champ="exclus">Le véhicule</div>
+        <div data-champ="etapes">Configuration en ligne
+Prise de RDV atelier
+Installation &amp; récupération</div>
+        <div data-champ="confirmation">Votre demande est enregistrée.</div>
+        <a data-champ="calcom" href="https://cal.com/kapam/atelier"></a></div></div>
+      <div role="listitem" class="w-dyn-item"><div data-item="formules" data-slug="kit-diy" data-nom="Kit DIY" data-ordre="3" data-etiquette="KIT LIVRÉ"
+        data-accroche="Vous avez déjà un van et vous aimez bricoler." data-prix="2000" data-delai="Livraison 2 à 3 semaines" data-bouton="Demander un devis Kit DIY" data-duree="15" data-statut="À valider">
+        <div data-champ="description">Vous avez déjà un van et vous aimez bricoler : on vous livre un kit prêt à monter.</div>
+        <div data-champ="inclus">Un kit sur-mesure fabriqué dans notre atelier
+Plans de montage détaillés + support technique</div>
+        <div data-champ="exclus">Le véhicule
+La pose (à votre charge)</div>
+        <div data-champ="etapes">Configuration en ligne
+Fabrication du kit
+Livraison &amp; montage chez vous</div>
+        <div data-champ="confirmation">Votre demande est enregistrée.</div>
+        <a data-champ="calcom" href="#" class="w-dyn-bind-empty"></a></div></div>
+    </div></div>
+    <div class="w-dyn-list"><div role="list" class="w-dyn-items">
+      <div role="listitem" class="w-dyn-item"><div data-item="marques" data-slug="renault" data-nom="Renault" data-ordre="1"></div></div>
+      <div role="listitem" class="w-dyn-item"><div data-item="marques" data-slug="fiat" data-nom="Fiat" data-ordre="2"></div></div>
+      <div role="listitem" class="w-dyn-item"><div data-item="marques" data-slug="tesla" data-nom="Tesla" data-ordre="3"></div></div>
+    </div></div>
+    <div class="w-dyn-list"><div role="list" class="w-dyn-items">
+      <div role="listitem" class="w-dyn-item"><div data-item="vehicules" data-slug="renault-trafic-3" data-nom="Renault Trafic 3" data-modele="Trafic 3" data-millesime="2014+" data-marque="renault" data-statut="Validé"></div></div>
+      <div role="listitem" class="w-dyn-item"><div data-item="vehicules" data-slug="fiat-ducato" data-nom="Fiat Ducato" data-modele="Ducato L1/L2" data-marque="fiat" data-statut="À valider Willy"></div></div>
+    </div></div>
+    <div class="w-dyn-list"><div role="list" class="w-dyn-items">
+      <div role="listitem" class="w-dyn-item"><div data-item="longueurs" data-slug="trafic-3-l1" data-vehicule="renault-trafic-3" data-etiquette="L1" data-gabarit="Court" data-ordre="1"></div></div>
+      <div role="listitem" class="w-dyn-item"><div data-item="longueurs" data-slug="trafic-3-l2" data-vehicule="renault-trafic-3" data-etiquette="L2" data-gabarit="Long" data-ordre="2"></div></div>
+    </div></div>
+    <div class="w-dyn-list"><div role="list" class="w-dyn-items">
+      <div role="listitem" class="w-dyn-item"><div data-item="kits" data-slug="travel" data-nom="Kit Travel" data-ordre="1" data-statut="À valider Willy"></div></div>
+      <div role="listitem" class="w-dyn-item"><div data-item="kits" data-slug="madel" data-nom="Kit Madel" data-ordre="3" data-statut="À valider Willy"></div></div>
+    </div></div>
+    <div class="w-dyn-list"><div role="list" class="w-dyn-items">
+      <div role="listitem" class="w-dyn-item"><div data-item="finitions" data-slug="soft" data-nom="Soft" data-sous-libelle="essentiel" data-ordre="1" data-statut="À valider Willy"></div></div>
+      <div role="listitem" class="w-dyn-item"><div data-item="finitions" data-slug="best" data-nom="Best" data-sous-libelle="confort" data-ordre="3" data-statut="À valider Willy"></div></div>
+    </div></div>
+  </div>
+</div>
