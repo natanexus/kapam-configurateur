@@ -212,7 +212,7 @@ export function creerDevis({ document: doc, racine, formules, catalogue, configu
   function rendreConfirmation(f) {
     const s = $('[data-vue="confirmation"]', boite); if (!s || !f) return
     texte(s, 'message', f.confirmation)
-    texte(s, 'duree', f.duree != null ? String(f.duree) : '')
+    texte(s, 'duree', f.duree != null ? `${f.duree} min` : '')
     const lien = $('[data-action="calcom"]', s); if (lien) lien.setAttribute('href', f.calcom ?? '#')
     montrer($('[data-bloc="rdv"]', s), !!f.calcom)
   }

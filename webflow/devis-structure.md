@@ -27,7 +27,7 @@ div.devis_overlay [data-devis] [hidden]                 ← fond cliquable (ferm
   │   button[data-action="precedent"] « Retour »
   └ section [data-vue="confirmation"] [hidden]
       eyebrow « Demande envoyée » · h2 « Bien reçu ! » · p[data-champ="message"]
-      div[data-bloc="rdv"] { p « …appel de <span data-champ="duree"> minutes… » + a.button[data-action="calcom"] target=_blank }
+      div[data-bloc="rdv"] { p « Pour avancer plus vite, réservez un appel… » + span[data-champ="duree"] (« 30 min ») + a.button[data-action="calcom"] target=_blank }
 div.hide [data-gabarits]
   ├ div.devis_carte [data-gabarit="carte-formule"]  span[data-champ="etiquette"] · h3[data-champ="nom"] · p[data-champ="accroche"] · p[data-champ="tarif"] · span[data-champ="mention"] · button[data-action="presentation"]
   ├ li.devis_ligne [data-gabarit="ligne"]           span[data-champ="numero"] + span[data-champ="titre"]
@@ -56,11 +56,11 @@ Champs par formule (maquette) : Clé en main = coordonnées, véhicule envisagé
 
 ## Données (zone `[data-devis-donnees]`, 6 listes de collection)
 
-Même convention que la page Configurateur : chaque item est un `div` avec `data-item="<collection>"` et les champs en attributs `data-*`.
+Même convention que la page Configurateur : chaque item est un `div` avec `data-item="<collection>"` et les champs en attributs `data-*`. Construit le 23/10/2026 par l'API : chaque item contient un **Embed** dont le code porte les champs CMS (`{{wf {"path":"slug","type":"PlainText"\} }}`, référence : `marque:slug`), car l'API ne peut pas lier des attributs dans un composant. Les formulaires sont eux aussi des Embeds (un par formule) : champs, `name`, `required` et chips s'y éditent en HTML.
 
 | Liste | `data-item` | Attributs / enfants |
 |---|---|---|
-| Formules (tri : Ordre) | `formules` | `data-slug`, `data-nom`, `data-ordre`, `data-etiquette`, `data-accroche`, `data-prix` (Prix à partir de), `data-delai`, `data-bouton` (Texte du bouton), `data-duree` (Durée de l'appel), `data-statut` (Statut). Enfants Text Block : `[data-champ="description"]`, `[data-champ="inclus"]`, `[data-champ="exclus"]`, `[data-champ="etapes"]`, `[data-champ="confirmation"]` (les sauts de ligne sont conservés). Enfant Link Block `a[data-champ="calcom"]` lié à Lien Cal.com. |
+| Formules | `formules` | `data-slug`, `data-nom`, `data-ordre`, `data-etiquette`, `data-accroche`, `data-prix` (Prix à partir de), `data-delai`, `data-bouton` (Texte du bouton), `data-duree` (Durée de l'appel), `data-statut` (Statut). Enfants : `div[data-champ="description"]`, `inclus`, `exclus`, `etapes`, `confirmation` (sauts de ligne conservés) et `a[data-champ="calcom" href=Lien Cal.com]`. Le tri par Ordre est fait par le script. |
 | Config · Marques | `marques` | `data-slug`, `data-nom`, `data-ordre` |
 | Config · Véhicules | `vehicules` | `data-slug`, `data-nom`, `data-modele`, `data-millesime`, `data-marque` (slug), `data-statut` |
 | Config · Longueurs | `longueurs` | `data-slug`, `data-vehicule` (slug), `data-etiquette`, `data-gabarit`, `data-ordre` |

@@ -140,7 +140,7 @@ describe('modale', () => {
     expect(document.querySelector('[data-champ="message"]').textContent).toBe('Votre demande est enregistrée.')
     expect(document.querySelector('[data-bloc="rdv"]').hidden).toBe(false)
     expect(document.querySelector('[data-action="calcom"]').getAttribute('href')).toBe('https://cal.com/kapam/atelier')
-    expect(document.querySelector('[data-champ="duree"]').textContent).toBe('15')
+    expect(document.querySelector('[data-champ="duree"]').textContent).toBe('15 min')
     expect(events).toEqual(['atelier'])
   })
 
