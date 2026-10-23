@@ -1,11 +1,14 @@
 /**
- * Filtres de la page catégorie « Kits d'aménagement » de la boutique.
+ * Filtres des pages catégorie de la boutique : « Kits d'aménagement » (mode kits) et « Accessoires » (mode produits).
  * Les cartes sont rendues par Webflow (liste CMS) ; le script ne fait que les masquer,
- * les réordonner et compléter prix et chip selon le véhicule choisi.
+ * les réordonner, paginer et compléter prix et chip selon le véhicule choisi.
  *
  * Contrat avec la page Webflow (attributs) :
- *   [data-boutique="kits"]            racine
+ *   [data-boutique="kits"|"produits"]  racine ; choisit le mode (voir MODES)
  *   [data-carte="kit"] data-kit=…     carte d'un kit ; [data-champ="prix"|"chip"|"badge"|"nom"]
+ *   [data-carte="produit"] data-produit=…   carte d'un accessoire (mêmes champs)
+ *   [data-tuile-edito="6"]            tuile éditoriale, déplacée après la 6e carte visible (masquée s'il y a 6 cartes ou moins)
+ *   [data-liste="pagination"]         boutons de page (12 par page en mode produits)
  *   [data-select] > [data-champ="libelle-select"] + select   boîte visible d'un select (texte recopié, classe desactive)
  *   [data-filtre="…"]                 contrôles : recherche, marque, modele, longueur (select),
  *                                     agencement, finition, budget, delai (boutons data-valeur), pose (switch), tri
@@ -17,6 +20,7 @@
  */
 import { slugifier } from './catalogue.js'
 import { num } from './regles.js'
+import { PLATEFORME_VW_T5 } from './config.js'
 import { euros, pluriel } from './format.js'
 import { TEXTES } from './config.js'
 
@@ -24,11 +28,13 @@ import { TEXTES } from './config.js'
 
 export const filtresVides = () => ({
   recherche: '', marque: null, vehicule: null, longueur: null,
-  agencement: [], finition: [], budget: [], delai: [], pose: false, tri: 'pertinence',
+  agencement: [], finition: [], type: [], kit: [], budget: [], delai: [], pose: false, tri: 'pertinence', page: 1,
 })
 
-const GROUPES_CASES = ['agencement', 'finition', 'budget', 'delai']
-const CLES_URL = { recherche: 'q', marque: 'marque', vehicule: 'modele', longueur: 'longueur', agencement: 'agencement', finition: 'finition', budget: 'budget', delai: 'delai', pose: 'pose', tri: 'tri' }
+/** Groupes à cases cumulables : agencement et finition sur la page Kits, type et kit sur la page Accessoires. */
+const GROUPES_CASES = ['agencement', 'finition', 'type', 'kit', 'budget', 'delai']
+const CLES_URL = { recherche: 'q', marque: 'marque', vehicule: 'modele', longueur: 'longueur', agencement: 'agencement', finition: 'finition', type: 'type', kit: 'kit', budget: 'budget', delai: 'delai', pose: 'pose', tri: 'tri', page: 'page' }
+export const PAR_PAGE = 12
 
 export function filtresDepuisUrl(search) {
   const p = new URLSearchParams(search)
@@ -38,6 +44,7 @@ export function filtresDepuisUrl(search) {
     if (v == null || v === '') continue
     if (GROUPES_CASES.includes(cle)) f[cle] = v.split(',').filter(Boolean)
     else if (cle === 'pose') f.pose = v === '1'
+    else if (cle === 'page') f.page = Math.max(1, Number(v) || 1)
     else f[cle] = v
   }
   return f
@@ -50,6 +57,7 @@ export function filtresVersUrl(f) {
     if (GROUPES_CASES.includes(cle)) { if (v.length) p.set(nom, v.join(',')) }
     else if (cle === 'pose') { if (v) p.set(nom, '1') }
     else if (cle === 'tri') { if (v && v !== 'pertinence') p.set(nom, v) }
+    else if (cle === 'page') { if (v > 1) p.set(nom, String(v)) }
     else if (v) p.set(nom, v)
   }
   const s = p.toString()
@@ -75,6 +83,12 @@ export function completerDepuisPage(brut, racine) {
       sousLibelle: el.dataset.sousLibelle || null, badge: el.dataset.badge || null,
       statut: slugifier(el.dataset.statut || 'a-valider'), ordre: i + 1,
     })).filter((k) => k.slug)
+  }
+  // Page Accessoires : les kits sont dans le rail (« Compatible avec mon kit »).
+  if (!brut.kits?.length) {
+    brut.kits = [...racine.querySelectorAll('[data-filtre="kit"][data-valeur]')].map((el, i) => ({
+      slug: el.dataset.valeur, nom: el.querySelector('[data-champ="libelle"]')?.textContent.trim() || el.dataset.valeur, ordre: i + 1, statut: 'a-valider',
+    }))
   }
   if (!brut.finitions?.length) {
     brut.finitions = [...racine.querySelectorAll('[data-filtre="finition"][data-valeur]')].map((el, i) => ({
@@ -158,23 +172,120 @@ export function kitVisible(kit, f, c, sauf = null) {
   return true
 }
 
-/** Nombre de kits visibles si l'on cochait cette valeur dans ce groupe (les autres filtres restant appliqués). */
-export function compteur(groupe, valeur, f, c) {
-  const essai = { ...f, [groupe]: [valeur] }
-  return c.kits.filter((k) => kitVisible(k, essai, c)).length
+/* ------------------------------------------------- produits (accessoires) --- */
+
+/** Kits proposés dans le périmètre véhicule (tous si aucun véhicule filtré). */
+function kitsDuPerimetre(f, c) {
+  const cibles = vehiculesCibles(f, c)
+  if (!cibles) return null
+  return new Set(cibles.flatMap((v) => v.kits))
 }
 
-export function trier(kits, f, c) {
-  if (f.tri !== 'prix-croissant' && f.tri !== 'prix-decroissant') return kits
+/**
+ * Prix affiché pour un accessoire : le plus bas parmi ses déclinaisons (versions, finition Best, longueur L2,
+ * plateforme VW T5), restreint au périmètre quand un véhicule / une longueur / un kit sont filtrés.
+ * { montant, exact } ; montant null = aucun prix connu.
+ */
+export function prixProduit(o, f, c) {
+  const v = f.vehicule ? c.par.vehicules.get(f.vehicule) : null
+  const gabarit = v?.longueurs.find((l) => l.slug === f.longueur)?.gabarit ?? null
+  const prix = []
+  const versions = (o.variantes ?? []).filter((x) => (x.type === 'choix' || x.type === 'cases') && num(x.prixTtc)
+    && (!x.marque || !v || v.marque === x.marque) && (!x.saufMarque || !v || v.marque !== x.saufMarque)
+    && (!x.plateforme || !v || v.plateforme === x.plateforme))
+  if (versions.length) {
+    for (const x of versions) { prix.push(x.prixTtc); if (num(x.prixBest)) prix.push(x.prixBest) }
+  } else {
+    if (num(o.prixVwT5) && (!v || v.plateforme === PLATEFORME_VW_T5)) prix.push(o.prixVwT5)
+    if (!v || v.plateforme !== PLATEFORME_VW_T5 || !num(o.prixVwT5)) {
+      if (num(o.prixTtc) && gabarit !== 'long') prix.push(o.prixTtc)
+      if (num(o.prixL2) && (gabarit === 'long' || !gabarit)) prix.push(o.prixL2)
+      if (num(o.prixTtc) && gabarit === 'long' && !num(o.prixL2)) prix.push(o.prixTtc)
+      if (num(o.prixBest) && gabarit !== 'long') prix.push(o.prixBest)
+      if (num(o.prixBestL2) && (gabarit === 'long' || !gabarit)) prix.push(o.prixBestL2)
+    }
+  }
+  if (!prix.length) return { montant: null, exact: false }
+  const mini = Math.min(...prix), maxi = Math.max(...prix)
+  return { montant: mini, exact: mini === maxi }
+}
+
+/** L'accessoire passe-t-il tous les filtres, sauf éventuellement un groupe (pour les compteurs) ? */
+export function produitVisible(o, f, c, sauf = null) {
+  if (!vivant(o)) return false
+  if (o.montage === 'impose') return false
+  if (f.recherche) {
+    const q = slugifier(f.recherche)
+    if (q && !slugifier(`${o.nom} ${o.sousLibelle ?? ''}`).includes(q)) return false
+  }
+  const v = f.vehicule ? c.par.vehicules.get(f.vehicule) : null
+  const kitsOk = kitsDuPerimetre(f, c)
+  // Compatibilité véhicule : plateforme requise, et kit compatible proposé sur le véhicule / la marque.
+  if (o.plateformes?.length) {
+    const cibles = vehiculesCibles(f, c)
+    if (cibles && !cibles.some((x) => x.plateforme && o.plateformes.includes(x.plateforme))) return false
+  }
+  if (o.kits?.length && kitsOk && !o.kits.some((k) => kitsOk.has(k))) return false
+  if (sauf !== 'type' && f.type.length && !f.type.includes(o.section)) return false
+  if (sauf !== 'kit' && f.kit.length && o.kits?.length && !f.kit.some((k) => o.kits.includes(k))) return false
+  if (sauf !== 'budget' && f.budget.length) {
+    const { montant } = prixProduit(o, f, c)
+    if (!num(montant)) return false
+    if (!f.budget.some((t) => { const [a, b] = tranche(t); return montant >= a && montant < b })) return false
+  }
+  if (f.pose && o.montage !== 'atelier') return false
+  return true
+}
+
+/* ------------------------------------------------------- modes de page --- */
+
+/**
+ * Un mode = la collection affichée et ses règles. 'kits' pour /boutique/kits-amenagement,
+ * 'produits' pour /boutique/accessoires (data-boutique de la racine).
+ */
+export const MODES = {
+  kits: {
+    articles: (c) => c.kits, cle: 'kit', mot: 'kit',
+    visible: kitVisible, prix: prixCarte, nom: nomCarte,
+    index: (c) => c.par.kits,
+    vide: "Aucun kit n'est proposé",
+    fin: 'Retirez un filtre, ou demandez-nous un devis sur mesure : chaque kit est découpé aux gabarits de votre véhicule.',
+    parPage: Number.MAX_SAFE_INTEGER,
+  },
+  produits: {
+    articles: (c) => c.options.filter((o) => o.montage !== 'impose'), cle: 'produit', mot: 'accessoire',
+    visible: produitVisible, prix: prixProduit, nom: (o) => o.nom,
+    index: (c) => c.par.options,
+    vide: "Aucun accessoire n'est proposé",
+    fin: 'Retirez un filtre, ou demandez-nous un devis sur mesure.',
+    parPage: PAR_PAGE,
+  },
+}
+
+/** Nombre d'articles visibles si l'on cochait cette valeur dans ce groupe (les autres filtres restant appliqués). */
+export function compteur(groupe, valeur, f, c, mode = MODES.kits) {
+  const essai = { ...f, [groupe]: [valeur] }
+  return mode.articles(c).filter((a) => mode.visible(a, essai, c)).length
+}
+
+export function trier(articles, f, c, mode = MODES.kits) {
+  if (f.tri !== 'prix-croissant' && f.tri !== 'prix-decroissant') return articles
   const sens = f.tri === 'prix-croissant' ? 1 : -1
-  const p = (k) => prixCarte(k, f, c).montant
-  return [...kits].sort((a, b) => {
+  const p = (a) => mode.prix(a, f, c).montant
+  return [...articles].sort((a, b) => {
     const pa = p(a), pb = p(b)
     if (!num(pa) && !num(pb)) return 0
     if (!num(pa)) return 1
     if (!num(pb)) return -1
     return (pa - pb) * sens
   })
+}
+
+/** Libellés des sections (clé = slug du champ Section), pour les chips du filtre Type. */
+export const LIBELLES_SECTIONS = {
+  'options-du-kit': 'Options du kit', 'vitrage-isolation-aeration': 'Vitrage · Isolation · Aération',
+  'parois-plafond-plancher': 'Parois · Plafond · Plancher', electricite: 'Électricité', 'mise-en-eau': 'Mise en eau',
+  'wc-electromenager': 'WC · Électroménager', chauffage: 'Chauffage', accessoires: 'Accessoires',
 }
 
 /** Chips des filtres actifs : [{ filtre, valeur, libelle }]. */
@@ -187,6 +298,8 @@ export function chips(f, c) {
   if (lg) l.push({ filtre: 'longueur', valeur: lg.slug, libelle: lg.etiquette })
   for (const s of f.agencement) l.push({ filtre: 'agencement', valeur: s, libelle: c.par.kits.get(s)?.nom ?? s })
   for (const s of f.finition) l.push({ filtre: 'finition', valeur: s, libelle: c.par.finitions.get(s)?.nom ?? s })
+  for (const s of f.type) l.push({ filtre: 'type', valeur: s, libelle: LIBELLES_SECTIONS[s] ?? s })
+  for (const s of f.kit) l.push({ filtre: 'kit', valeur: s, libelle: c.par.kits.get(s)?.nom ?? s })
   for (const t of f.budget) {
     const [a, b] = tranche(t)
     l.push({ filtre: 'budget', valeur: t, libelle: b === Infinity ? `Plus de ${euros(a)}` : a === 0 ? `Moins de ${euros(b)}` : `${euros(a)} – ${euros(b)}` })
@@ -216,13 +329,16 @@ const texte = (el, s) => { if (el) el.textContent = s ?? '' }
 const montrer = (el, oui) => { if (el) el.toggleAttribute('hidden', !oui) }
 
 export function creerBoutique({ racine, catalogue: c, document: doc = document, history: hist = globalThis.history, location: loc = globalThis.location }) {
+  const mode = MODES[racine.dataset.boutique] ?? MODES.kits
   let f = filtresDepuisUrl(loc?.search ?? '')
   const q = (s) => racine.querySelector(s)
   const qa = (s) => [...racine.querySelectorAll(s)]
-  const cartes = qa('[data-carte="kit"]')
-  const liste = q('[data-liste="kits"]') ?? cartes[0]?.parentElement?.parentElement
-  const items = cartes.map((el) => ({ el, slug: el.dataset.kit, item: el.closest('.w-dyn-item') ?? el }))
+  const cartes = qa(`[data-carte="${mode.cle}"]`)
+  const liste = q('[data-liste="kits"], [data-liste="produits"]') ?? cartes[0]?.parentElement?.parentElement
+  const items = cartes.map((el) => ({ el, slug: el.dataset[mode.cle], item: el.closest('.w-dyn-item') ?? el }))
   const ordreInitial = items.map((x) => x.item)
+  const tuile = q('[data-tuile-edito]')
+  const tuileApres = Number(tuile?.dataset.tuileEdito) || 6
   const selMarque = q('[data-filtre="marque"]'), selModele = q('[data-filtre="modele"]'), selLongueur = q('[data-filtre="longueur"]')
 
   /* ---- selects du véhicule : options depuis le catalogue ---- */
@@ -253,34 +369,66 @@ export function creerBoutique({ racine, catalogue: c, document: doc = document, 
 
   /* ---- cartes ---- */
   function rendreCartes() {
-    const visibles = trier(c.kits.filter((k) => kitVisible(k, f, c)), f, c)
-    const slugsVisibles = new Set(visibles.map((k) => k.slug))
+    const index = mode.index(c)
+    const visibles = trier(mode.articles(c).filter((a) => mode.visible(a, f, c)), f, c, mode)
+    // Pagination : la page demandée est ramenée dans les bornes.
+    const nbPages = Math.max(1, Math.ceil(visibles.length / mode.parPage))
+    if (f.page > nbPages) f = { ...f, page: nbPages }
+    const debut = (f.page - 1) * mode.parPage
+    const pageCourante = visibles.slice(debut, debut + mode.parPage)
+    const slugsPage = new Set(pageCourante.map((a) => a.slug))
+    const v = f.vehicule ? c.par.vehicules.get(f.vehicule) : null
+    const lg = v?.longueurs.find((x) => x.slug === f.longueur)
     for (const { el, slug, item } of items) {
-      const kit = c.par.kits.get(slug)
-      montrer(item, !!kit && slugsVisibles.has(slug))
-      if (!kit) continue
-      texte(el.querySelector('[data-champ="nom"]'), nomCarte(kit, f, c))
-      const { montant } = prixCarte(kit, f, c)
+      const a = index.get(slug)
+      montrer(item, !!a && slugsPage.has(slug))
+      if (!a) continue
+      texte(el.querySelector('[data-champ="nom"]'), mode.nom(a, f, c))
+      const { montant } = mode.prix(a, f, c)
       texte(el.querySelector('[data-champ="prix"]'), num(montant) ? euros(montant) : TEXTES.prixACompleter)
       const chip = el.querySelector('[data-champ="chip"]')
-      const v = f.vehicule ? c.par.vehicules.get(f.vehicule) : null
-      const lg = v?.longueurs.find((x) => x.slug === f.longueur)
       texte(chip, lg ? lg.etiquette : v ? v.modele : '')
       montrer(chip, !!v)
       const badge = el.querySelector('[data-champ="badge"]')
       montrer(badge, !!badge?.textContent.trim())
     }
-    // Ordre : tri par prix, ou ordre du CMS.
+    // Ordre : tri par prix, ou ordre du CMS ; la tuile éditoriale après la N-ième carte visible.
     if (liste) {
-      const ordre = f.tri === 'pertinence' ? ordreInitial : visibles.map((k) => items.find((x) => x.slug === k.slug)?.item).filter(Boolean)
+      const ordre = f.tri === 'pertinence' ? ordreInitial : visibles.map((a) => items.find((x) => x.slug === a.slug)?.item).filter(Boolean)
       for (const node of ordre) liste.append(node)
+      if (tuile) {
+        const visiblesDom = ordre.filter((n) => !n.hasAttribute('hidden'))
+        const apres = visiblesDom[tuileApres - 1]
+        if (apres && visiblesDom.length > tuileApres) { apres.after(tuile); montrer(tuile, true) }
+        else montrer(tuile, false)
+      }
     }
-    const n = visibles.length, total = c.kits.filter(vivant).length
-    texte(q('[data-champ="compteur"]'), `${pluriel(n, 'kit')} sur ${total}`)
-    texte(q('[data-champ="compteur-haut"]'), pluriel(n, 'kit'))
+    const n = visibles.length, total = mode.articles(c).filter(vivant).length
+    texte(q('[data-champ="compteur"]'), `${pluriel(n, mode.mot)} sur ${total}`)
+    texte(q('[data-champ="compteur-haut"]'), pluriel(n, mode.mot))
     montrer(q('[data-bloc="aucun-resultat"]'), n === 0)
     if (n === 0) texte(q('[data-champ="justification"]'), justification())
+    rendrePagination(nbPages)
     return visibles
+  }
+
+  function rendrePagination(nbPages) {
+    const nav = q('[data-liste="pagination"]')
+    if (!nav) return
+    nav.innerHTML = ''
+    montrer(nav, nbPages > 1)
+    if (nbPages <= 1) return
+    const bouton = (libelle, page, courante = false, aria = null) => {
+      const b = doc.createElement('button')
+      b.type = 'button'; b.className = 'boutique_page' + (courante ? ' selectionne' : '')
+      b.dataset.action = 'page'; b.dataset.valeur = String(page); b.textContent = libelle
+      if (courante) b.setAttribute('aria-current', 'page')
+      if (aria) b.setAttribute('aria-label', aria)
+      return b
+    }
+    if (f.page > 1) nav.append(bouton('← Précédent', f.page - 1, false, 'Page précédente'))
+    for (let i = 1; i <= nbPages; i++) nav.append(bouton(String(i), i, i === f.page, `Page ${i}`))
+    if (f.page < nbPages) nav.append(bouton('Suivant →', f.page + 1, false, 'Page suivante'))
   }
 
   function justification() {
@@ -289,9 +437,11 @@ export function creerBoutique({ racine, catalogue: c, document: doc = document, 
     if (v) bouts.push(`sur ${v.nom}`)
     else if (f.marque) bouts.push(`chez ${c.par.marques.get(f.marque)?.nom ?? f.marque}`)
     if (f.finition.length) bouts.push(`en finition ${f.finition.map((s) => c.par.finitions.get(s)?.nom ?? s).join(' ou ')}`)
+    if (f.type.length) bouts.push(`en ${f.type.map((s) => LIBELLES_SECTIONS[s] ?? s).join(' ou ')}`)
+    if (f.kit.length) bouts.push(`pour le ${f.kit.map((s) => c.par.kits.get(s)?.nom ?? s).join(' ou le ')}`)
     if (f.budget.length) bouts.push('dans cette fourchette de prix')
     if (f.recherche) bouts.push(`pour « ${f.recherche} »`)
-    return `Aucun kit n'est proposé ${bouts.join(', ') || 'avec ces critères'}. Retirez un filtre, ou demandez-nous un devis sur mesure : chaque kit est découpé aux gabarits de votre véhicule.`
+    return `${mode.vide} ${bouts.join(', ') || 'avec ces critères'}. ${mode.fin}`
   }
 
   /* ---- rail : cases, compteurs, chips, état ---- */
@@ -308,7 +458,7 @@ export function creerBoutique({ racine, catalogue: c, document: doc = document, 
       const coche = f[g].includes(v)
       el.classList.toggle('selectionne', coche)
       el.setAttribute('aria-pressed', String(coche))
-      texte(el.querySelector('[data-champ="compteur"]'), String(compteur(g, v, f, c)))
+      texte(el.querySelector('[data-champ="compteur"]'), String(compteur(g, v, f, c, mode)))
     }
     const zone = q('[data-liste="chips"]')
     if (zone) {
@@ -333,7 +483,7 @@ export function creerBoutique({ racine, catalogue: c, document: doc = document, 
     const visibles = rendreCartes()
     rendreRail()
     if (hist?.replaceState && loc) hist.replaceState(null, '', (loc.pathname ?? '') + filtresVersUrl(f) + (loc.hash ?? ''))
-    racine.dispatchEvent(new CustomEvent('kapam:boutique', { bubbles: true, detail: { filtres: { ...f }, visibles: visibles.map((k) => k.slug) } }))
+    racine.dispatchEvent(new CustomEvent('kapam:boutique', { bubbles: true, detail: { filtres: { ...f }, visibles: visibles.map((a) => a.slug) } }))
   }
 
   /**
@@ -352,7 +502,7 @@ export function creerBoutique({ racine, catalogue: c, document: doc = document, 
   // Au chargement, tous les groupes sont fermés.
   for (const g of qa('[data-groupe]')) plier(g, false)
 
-  function changer(g) { f = { ...f, ...g }; rendre() }
+  function changer(g) { f = { ...f, page: 1, ...g }; rendre() }
 
   /* ---- interactions ---- */
   racine.addEventListener('change', (ev) => {
@@ -375,6 +525,7 @@ export function creerBoutique({ racine, catalogue: c, document: doc = document, 
     const el = ev.target.closest('[data-action], [data-filtre][data-valeur]'); if (!el) return
     const { action, filtre, valeur } = el.dataset
     if (action === 'retirer') return changer(retirer(f, filtre, valeur))
+    if (action === 'page') { changer({ page: Number(valeur) || 1 }); liste?.scrollIntoView?.({ block: 'start', behavior: 'smooth' }); return }
     if (action === 'tout-effacer') return changer({ ...filtresVides(), tri: f.tri })
     if (action === 'plier') return plier(el.closest('[data-groupe]'), el.getAttribute('aria-expanded') !== 'true')
     if (action === 'filtres') {

@@ -81,13 +81,17 @@ Attributs posés par le script sur les clones : `data-marque`, `data-vehicule`, 
 
 Drawers (résumé, détail d'option, comparateur de kits), nuanciers avec décors quand Willy fournit références et photos, lot mobile.
 
-## Contrat avec la page Webflow « Kits d'aménagement » (/boutique/kits-amenagement)
+## Contrat avec les pages boutique « Kits d'aménagement » (/boutique/kits-amenagement) et « Accessoires » (/boutique/accessoires)
 
 `dist/boutique.js` partage `lecture-cms.js`, `catalogue.js`, `regles.js` et `format.js` avec le configurateur : même zone `[data-cms-donnees]` (marques, véhicules + kits imbriqués, longueurs, grille, groupes), mêmes attributs.
 
 | Sélecteur | Rôle |
 |---|---|
-| `[data-boutique="kits"]` | Racine (le `container-medium` de la section Filtre) |
+| `[data-boutique="kits"\|"produits"]` | Racine (le `container-medium` de la section Filtre) ; la valeur choisit le mode (`MODES` dans `boutique.js`) |
+| `[data-carte="produit"] data-produit` | Carte d'un accessoire (liste CMS Config · Options filtrée sur Catégorie boutique = Accessoires), mêmes `[data-champ]` que la carte kit |
+| `[data-filtre="type"\|"kit"] [data-valeur]` | Page Accessoires : Type (slug de la section) et Compatible avec mon kit (slug du kit) remplacent Agencement / Finition |
+| `[data-tuile-edito="6"]` | Tuile éditoriale : déplacée après la 6e carte visible, masquée s'il y a 6 cartes ou moins |
+| `[data-liste="pagination"]` | Page Accessoires : 12 cartes par page, boutons construits par le script (`?page=N`) ; un changement de filtre revient en page 1 |
 | `[data-carte="kit"] data-kit` | Carte rendue par la liste CMS Config · Kits ; `[data-champ="nom"\|"prix"\|"chip"\|"badge"]` remplis par le script. Le script masque l'item `.w-dyn-item` (`hidden`) et réordonne la liste `[data-liste="kits"]` |
 | `[data-filtre="marque"\|"modele"\|"longueur"]` | Selects en cascade, options construites depuis le catalogue. Chaque select natif (classe `boutique_select_natif`) est transparent, posé sur sa boîte `[data-select]` (classe `boutique_select`) : le script recopie l'option choisie dans `[data-champ="libelle-select"]` et pose la classe `desactive` quand le select est désactivé |
 | `[data-filtre="agencement"\|"finition"\|"budget"\|"delai"] [data-valeur]` | Boutons à cocher (classe `selectionne`, `aria-pressed`) ; `[data-champ="compteur"]` = kits visibles si l'on cochait la valeur |
@@ -98,4 +102,6 @@ Drawers (résumé, détail d'option, comparateur de kits), nuanciers avec décor
 | `[data-liste="chips"]`, `[data-champ="etat-filtres"\|"compteur"\|"compteur-haut"]` | Filtres actifs et compteurs |
 | `[data-bloc="aucun-resultat"] [data-champ="justification"]` | Bloc vide, phrase construite depuis les filtres |
 
-Règles : un kit est visible s'il est proposé sur le véhicule (ou l'un des véhicules de la marque) choisi, et s'il a au moins une ligne de grille dans les finitions cochées. Prix de la carte : prix exact quand véhicule + longueur + une finition sont connus, sinon le prix le plus bas de la grille dans le périmètre (sans mention « à partir de », comme sur la maquette), sinon « prix à compléter » (véhicule sans grille). Le filtre Budget compare sur ce prix et exclut les prix inconnus. Délai et Pose n'ont pas de données pour les kits : les groupes restent masqués. Les filtres sont recopiés dans l'URL (`?marque=…&modele=…&longueur=…&agencement=…&finition=…&budget=…&tri=…&q=…`).
+Règles : un kit est visible s'il est proposé sur le véhicule (ou l'un des véhicules de la marque) choisi, et s'il a au moins une ligne de grille dans les finitions cochées. Prix de la carte : prix exact quand véhicule + longueur + une finition sont connus, sinon le prix le plus bas de la grille dans le périmètre (sans mention « à partir de », comme sur la maquette), sinon « prix à compléter » (véhicule sans grille). Le filtre Budget compare sur ce prix et exclut les prix inconnus. Délai et Pose n'ont pas de données pour les kits : les groupes restent masqués. Les filtres sont recopiés dans l'URL (`?marque=…&modele=…&longueur=…&agencement=…&finition=…&type=…&kit=…&budget=…&tri=…&page=…&q=…`).
+
+Accessoires : un produit est visible s'il n'est pas « Imposé en atelier », si sa plateforme requise (le cas échéant) est celle du véhicule filtré, et si l'un de ses kits compatibles (le cas échéant) est proposé sur le véhicule ou la marque. Prix de la carte : le plus bas de ses déclinaisons (versions, Best, L2, VW T5) dans le périmètre filtré. La zone cachée de cette page contient Options (catégorie Accessoires, avec kits / plateformes / finitions imbriqués) et Variantes, en plus des listes communes.

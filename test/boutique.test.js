@@ -5,7 +5,7 @@ import SRC from '../src/boutique.js?raw'
 import { normaliser, versCms } from './adaptateur.js'
 import { indexer } from '../src/catalogue.js'
 import {
-  creerBoutique, completerDepuisPage, filtresVides, filtresDepuisUrl, filtresVersUrl, kitVisible, prixCarte, compteur, chips, retirer, tranche,
+  creerBoutique, completerDepuisPage, filtresVides, produitVisible, prixProduit, MODES, PAR_PAGE, filtresDepuisUrl, filtresVersUrl, kitVisible, prixCarte, compteur, chips, retirer, tranche,
 } from '../src/boutique.js'
 
 const c = indexer(versCms(normaliser(extrait)))
@@ -177,5 +177,112 @@ describe('mots interdits', () => {
   it('le module n\'écrit aucun mot interdit', () => {
     const src = SRC.toLowerCase()
     for (const mot of ['panier', 'commande', 'achat', 'caisse', 'acheter']) expect(src.includes(mot), mot).toBe(false)
+  })
+})
+
+/* ---------------------------------------------------------------- Accessoires --- */
+
+const accessoires = c.options.filter((o) => o.montage !== 'impose' && o.statut !== 'retire')
+const SECTIONS_PAGE = ['options-du-kit', 'vitrage-isolation-aeration', 'parois-plafond-plancher', 'electricite', 'mise-en-eau', 'wc-electromenager', 'chauffage', 'accessoires']
+
+function pageProduits() {
+  const cartes = accessoires.map((o) => `<div class="w-dyn-item"><article data-carte="produit" data-produit="${o.slug}" data-nom="${o.nom}">
+      <span data-champ="badge"></span><h3 data-champ="nom">${o.nom}</h3>
+      <span data-champ="prix">prix à compléter</span><span data-champ="chip" hidden></span></article></div>`).join('')
+  const opt = (g, l) => l.map((x) => `<button type="button" class="boutique_option" data-filtre="${g}" data-valeur="${x.slug}">
+      <span data-champ="compteur">0</span><span data-champ="libelle">${x.nom}</span></button>`).join('')
+  document.body.innerHTML = `<div data-boutique="produits">
+    <div data-bloc="toolbar"><span data-champ="etat-filtres"></span><div data-liste="chips"></div><span data-champ="compteur-haut"></span>
+      <select data-filtre="tri"><option value="pertinence">Pertinence</option><option value="prix-croissant">Prix croissant</option><option value="prix-decroissant">Prix décroissant</option></select></div>
+    <aside data-rail><span data-champ="compteur"></span><button data-action="tout-effacer"></button><input data-filtre="recherche">
+      <div data-groupe="vehicule"><button data-action="plier"><span>Votre véhicule</span><span class="boutique_groupe_icone">+</span></button><div class="boutique_groupe_corps" hidden>
+        <select data-filtre="marque"><option value="">Marque</option></select>
+        <select data-filtre="modele" disabled><option value="">Modèle</option></select>
+        <select data-filtre="longueur" disabled><option value="">Longueur</option></select></div></div>
+      <div data-groupe="type"><div class="boutique_groupe_corps" hidden>${opt('type', SECTIONS_PAGE.map((s) => ({ slug: s, nom: s })))}</div></div>
+      <div data-groupe="kit"><div class="boutique_groupe_corps" hidden>${opt('kit', c.kits)}</div></div>
+      <div data-groupe="budget"><div class="boutique_groupe_corps" hidden>${opt('budget', [{ slug: '0-100', nom: 'Moins de 100 €' }, { slug: '100-500', nom: '100 – 500 €' }, { slug: '500-', nom: 'Plus de 500 €' }])}</div></div>
+    </aside>
+    <div data-grille="produits"><div class="w-dyn-list"><div class="w-dyn-items" data-liste="produits">${cartes}</div></div>
+      <a data-tuile-edito="6" hidden>Tuile</a>
+      <div data-bloc="aucun-resultat" hidden><p data-champ="justification"></p></div>
+      <nav data-liste="pagination" hidden></nav></div>
+  </div>`
+}
+const visiblesProduits = () => [...document.querySelectorAll('[data-carte="produit"]')].filter((el) => !el.closest('.w-dyn-item').hasAttribute('hidden')).map((el) => el.dataset.produit)
+
+describe('règles accessoires', () => {
+  const f0 = filtresVides()
+  it('les postes imposés en atelier ne sont jamais proposés', () => {
+    for (const o of c.options.filter((o) => o.montage === 'impose')) expect(produitVisible(o, f0, c)).toBe(false)
+    expect(MODES.produits.articles(c).some((o) => o.montage === 'impose')).toBe(false)
+  })
+  it('prix : le plus bas des déclinaisons, exact quand il n\'y en a qu\'un', () => {
+    const meuble = c.options.find((o) => o.nom.startsWith('Meuble haut'))
+    expect(prixProduit(meuble, f0, c)).toEqual({ montant: 390, exact: false })
+    const l2 = trafic.longueurs.find((l) => l.gabarit === 'long')
+    expect(prixProduit(meuble, { ...f0, marque: trafic.marque, vehicule: trafic.slug, longueur: l2.slug }, c).montant).toBe(450)
+    const conv = c.options.find((o) => o.nom.startsWith('Pack Convertisseur'))
+    expect(prixProduit(conv, f0, c).montant).toBe(Math.min(...conv.variantes.filter((x) => x.type === 'choix').map((x) => x.prixTtc)))
+    const simple = c.options.find((o) => o.nom === 'WC Chimique')
+    expect(prixProduit(simple, f0, c)).toEqual({ montant: 110, exact: true })
+  })
+  it('le marchepied X82 disparaît sur un Vito, et les options du Mado sur un Vito (Travel seul)', () => {
+    const marchepied = c.options.find((o) => o.nom === 'Marchepied latéral')
+    const fVito = { ...f0, marque: vito.marque, vehicule: vito.slug }
+    expect(produitVisible(marchepied, f0, c)).toBe(true)
+    expect(produitVisible(marchepied, fVito, c)).toBe(false)
+    expect(produitVisible(marchepied, { ...f0, marque: trafic.marque, vehicule: trafic.slug }, c)).toBe(true)
+    const mado = c.options.find((o) => o.nom === 'Tablette cuisine MADO')
+    expect(produitVisible(mado, fVito, c)).toBe(false)
+    expect(produitVisible(mado, { ...f0, kit: ['mado'] }, c)).toBe(true)
+    expect(produitVisible(mado, { ...f0, kit: ['travel'] }, c)).toBe(false)
+    const sansKit = c.options.find((o) => o.nom === 'WC Chimique')
+    expect(produitVisible(sansKit, { ...f0, kit: ['travel'] }, c)).toBe(true)   // pas de kit précisé = tous les kits
+  })
+  it('type et budget', () => {
+    expect(accessoires.filter((o) => produitVisible(o, { ...f0, type: ['chauffage'] }, c)).every((o) => o.section === 'chauffage')).toBe(true)
+    const chers = accessoires.filter((o) => produitVisible(o, { ...f0, budget: ['500-'] }, c))
+    expect(chers.length).toBeGreaterThan(0)
+    expect(chers.every((o) => prixProduit(o, f0, c).montant >= 500)).toBe(true)
+  })
+})
+
+describe('page Accessoires', () => {
+  beforeEach(pageProduits)
+  it('pagine par 12, place la tuile après la 6e carte, et filtre', () => {
+    const app = creerBoutique({ racine: document.querySelector('[data-boutique]'), catalogue: c, document, ...faux() })
+    app.rendre()
+    const total = accessoires.length
+    expect(total).toBeGreaterThan(PAR_PAGE)
+    expect(visiblesProduits()).toHaveLength(PAR_PAGE)
+    expect(document.querySelector('[data-champ="compteur"]').textContent).toBe(`${total} accessoires sur ${total}`)
+    const nav = document.querySelector('[data-liste="pagination"]')
+    expect(nav.hasAttribute('hidden')).toBe(false)
+    expect(nav.querySelector('[aria-current="page"]').textContent).toBe('1')
+    // Tuile après la 6e carte visible
+    const tuile = document.querySelector('[data-tuile-edito]')
+    expect(tuile.hasAttribute('hidden')).toBe(false)
+    const avant = [...document.querySelectorAll('[data-liste="produits"] > *')].filter((n) => !n.hasAttribute('hidden'))
+    expect(avant.indexOf(tuile)).toBe(6)
+    // Page 2
+    nav.querySelector('[data-valeur="2"]').click()
+    expect(app.filtres.page).toBe(2)
+    expect(visiblesProduits()).toHaveLength(Math.min(PAR_PAGE, total - PAR_PAGE))
+    // Un filtre ramène en page 1 ; type chauffage = 2 produits → plus de tuile ni de pagination
+    document.querySelector('[data-filtre="type"][data-valeur="chauffage"]').click()
+    expect(app.filtres.page).toBe(1)
+    expect(visiblesProduits()).toHaveLength(2)
+    expect(tuile.hasAttribute('hidden')).toBe(true)
+    expect(nav.hasAttribute('hidden')).toBe(true)
+    expect(document.querySelector('[data-liste="chips"]').textContent).toContain('Chauffage')
+    // Kits lus depuis le rail
+    expect(app.filtres.kit).toEqual([])
+    document.querySelector('[data-filtre="kit"][data-valeur="mado"]').click()
+    expect(document.querySelector('[data-liste="chips"]').textContent).toContain('Kit Mado')
+  })
+  it('lit les kits du rail quand la zone cachée n\'en a pas', () => {
+    const brut = completerDepuisPage({ kits: [], finitions: [] }, document.querySelector('[data-boutique]'))
+    expect(brut.kits.map((k) => k.slug)).toEqual(c.kits.map((k) => k.slug))
   })
 })
