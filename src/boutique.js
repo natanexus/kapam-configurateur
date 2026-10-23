@@ -7,7 +7,7 @@
  *   [data-boutique="kits"|"produits"]  racine ; choisit le mode (voir MODES)
  *   [data-carte="kit"] data-kit=…     carte d'un kit ; [data-champ="prix"|"chip"|"badge"|"nom"]
  *   [data-carte="produit"] data-produit=…   carte d'un accessoire (mêmes champs)
- *   [data-tuile-edito="6"]            tuile éditoriale, déplacée après la 6e carte visible (masquée s'il y a 6 cartes ou moins)
+ *   [data-tuile-edito="6"]            tuile éditoriale unique, une fois par page : après la 6e carte visible (ou la dernière s'il y en a moins)
  *   [data-liste="pagination"]         boutons de page (12 par page en mode produits)
  *   [data-select] > [data-champ="libelle-select"] + select   boîte visible d'un select (texte recopié, classe desactive)
  *   [data-filtre="…"]                 contrôles : recherche, marque, modele, longueur (select),
@@ -397,9 +397,11 @@ export function creerBoutique({ racine, catalogue: c, document: doc = document, 
       const ordre = f.tri === 'pertinence' ? ordreInitial : visibles.map((a) => items.find((x) => x.slug === a.slug)?.item).filter(Boolean)
       for (const node of ordre) liste.append(node)
       if (tuile) {
+        // Une seule tuile, présente une fois sur chaque page de la grille : après la N-ième carte,
+        // ou après la dernière si la page en compte moins. Masquée seulement sans résultat.
         const visiblesDom = ordre.filter((n) => !n.hasAttribute('hidden'))
-        const apres = visiblesDom[tuileApres - 1]
-        if (apres && visiblesDom.length > tuileApres) { apres.after(tuile); montrer(tuile, true) }
+        const apres = visiblesDom[Math.min(tuileApres, visiblesDom.length) - 1]
+        if (apres) { apres.after(tuile); montrer(tuile, true) }
         else montrer(tuile, false)
       }
     }

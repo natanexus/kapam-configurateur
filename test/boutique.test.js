@@ -265,15 +265,24 @@ describe('page Accessoires', () => {
     expect(tuile.hasAttribute('hidden')).toBe(false)
     const avant = [...document.querySelectorAll('[data-liste="produits"] > *')].filter((n) => !n.hasAttribute('hidden'))
     expect(avant.indexOf(tuile)).toBe(6)
-    // Page 2
-    nav.querySelector('[data-valeur="2"]').click()
-    expect(app.filtres.page).toBe(2)
-    expect(visiblesProduits()).toHaveLength(Math.min(PAR_PAGE, total - PAR_PAGE))
-    // Un filtre ramène en page 1 ; type chauffage = 2 produits → plus de tuile ni de pagination
+    const tuilesVisibles = () => [...document.querySelectorAll('[data-tuile-edito]')].filter((n) => !n.hasAttribute('hidden'))
+    // Chaque page : exactement une tuile, après la 6e carte (ou la dernière)
+    const nbPages = Math.ceil(total / PAR_PAGE)
+    for (let p = 2; p <= nbPages; p++) {
+      nav.querySelector(`[data-valeur="${p}"]`).click()
+      expect(app.filtres.page).toBe(p)
+      const n = Math.min(PAR_PAGE, total - PAR_PAGE * (p - 1))
+      expect(visiblesProduits()).toHaveLength(n)
+      expect(tuilesVisibles()).toHaveLength(1)
+      const ordre = [...document.querySelectorAll('[data-liste="produits"] > *')].filter((x) => !x.hasAttribute('hidden'))
+      expect(ordre.indexOf(tuile)).toBe(Math.min(6, n))
+    }
+    // Un filtre ramène en page 1 ; type chauffage = 2 produits → tuile après la 2e carte, pas de pagination
     document.querySelector('[data-filtre="type"][data-valeur="chauffage"]').click()
     expect(app.filtres.page).toBe(1)
     expect(visiblesProduits()).toHaveLength(2)
-    expect(tuile.hasAttribute('hidden')).toBe(true)
+    expect(tuilesVisibles()).toHaveLength(1)
+    expect([...document.querySelectorAll('[data-liste="produits"] > *')].filter((x) => !x.hasAttribute('hidden')).indexOf(tuile)).toBe(2)
     expect(nav.hasAttribute('hidden')).toBe(true)
     expect(document.querySelector('[data-liste="chips"]').textContent).toContain('Chauffage')
     // Kits lus depuis le rail
