@@ -135,18 +135,23 @@ export function creerDevis({ document: doc, racine, formules, catalogue, configu
     const o = doc.createElement('option'); o.value = valeur; o.textContent = libelle; o.selected = selected
     select.appendChild(o)
   }
+  /** Vide le select en gardant (ou créant) l'option vide « Sélectionnez… » (texte : data-placeholder, posé dans le Designer). */
+  function viderSelect(sel) {
+    const garde = sel.firstElementChild?.value === '' ? sel.firstElementChild.cloneNode(true) : null
+    vider(sel)
+    if (garde) sel.appendChild(garde)
+    else option(sel, '', sel.dataset.placeholder ?? 'Sélectionnez…')
+  }
   function remplirSelectMarques(form) {
     const sel = $('[data-champ="select-marque"]', form); if (!sel) return
-    const garde = sel.firstElementChild?.value === '' ? sel.firstElementChild.cloneNode(true) : null
-    vider(sel); if (garde) sel.appendChild(garde)
+    viderSelect(sel)
     for (const m of marquesActives()) option(sel, m.slug, m.nom, m.slug === (vehiculeCfg?.marque ?? ''))
     option(sel, 'autre', 'Autre marque')
   }
   function remplirSelectModeles(form) {
     const marque = $('[data-champ="select-marque"]', form)?.value ?? ''
     const sel = $('[data-champ="select-modele"]', form); if (!sel) return
-    const garde = sel.firstElementChild?.value === '' ? sel.firstElementChild.cloneNode(true) : null
-    vider(sel); if (garde) sel.appendChild(garde)
+    viderSelect(sel)
     const modeles = catalogue.vehicules.filter((x) => x.marque === marque && x.statut !== 'retire')
     for (const x of modeles) option(sel, x.slug, `${x.modele}${x.millesime ? ' · ' + x.millesime : ''}`, x.slug === (vehiculeCfg?.slug ?? ''))
     option(sel, 'autre', 'Autre modèle')
@@ -184,6 +189,8 @@ export function creerDevis({ document: doc, racine, formules, catalogue, configu
     bloc.dataset.pret = '1'
     const form = $('form', bloc) ?? bloc
     champCache(form, 'formule', f.nom)
+    // Le Designer n'expose pas placeholder sur les champs créés par l'API : il est porté par data-placeholder.
+    for (const el of $$('[data-placeholder]', form)) if ('placeholder' in el && !el.placeholder) el.placeholder = el.dataset.placeholder
     remplirSelectMarques(form); remplirSelectModeles(form); remplirLongueurs(form)
     const kits = catalogue.kits.filter((k) => k.statut !== 'retire').map((k) => ({ slug: k.slug, nom: k.nom }))
     remplirChips(form, 'kits', 'kit', kits, cfg?.kit ?? null, 'Je ne sais pas encore')

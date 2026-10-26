@@ -90,7 +90,7 @@
       <div class="w-form" data-formulaire="atelier">
         <form id="devis-atelier" name="Devis Atelier" method="post">
           <input type="hidden" name="formule" data-champ-form="formule"><input type="hidden" name="recap" data-champ-form="recap"><input type="hidden" name="configuration" data-champ-form="configuration">
-          <input name="nom" required><input name="prenom" required><input type="email" name="email" required><input type="tel" name="telephone" required><input name="code-postal" required>
+          <input name="nom" required data-placeholder="Votre nom"><input name="prenom" required><input type="email" name="email" required><input type="tel" name="telephone" required><input name="code-postal" required>
           <select name="marque" data-champ="select-marque" required><option value="">Sélectionnez la marque</option></select>
           <select name="modele" data-champ="select-modele" required><option value="">Sélectionnez le modèle</option></select>
           <input name="annee" placeholder="Année du véhicule">
@@ -116,8 +116,8 @@
         <form id="devis-kit-diy" name="Devis Kit DIY" method="post">
           <input type="hidden" name="formule" data-champ-form="formule"><input type="hidden" name="recap" data-champ-form="recap"><input type="hidden" name="configuration" data-champ-form="configuration">
           <input name="nom" required><input name="prenom" required><input type="email" name="email" required><input type="tel" name="telephone" required><input name="code-postal" required>
-          <select name="marque" data-champ="select-marque" required><option value="">Sélectionnez la marque</option></select>
-          <select name="modele" data-champ="select-modele" required><option value="">Sélectionnez le modèle</option></select>
+          <select name="marque" data-champ="select-marque" required data-placeholder="Sélectionnez la marque"></select>
+          <select name="modele" data-champ="select-modele" required data-placeholder="Sélectionnez le modèle"></select>
           <input name="annee">
           <fieldset data-bloc="longueurs"><legend>Longueur</legend><div data-liste="longueurs"></div></fieldset>
           <fieldset data-bloc="kits"><legend>Kit souhaité</legend><div data-liste="kits"></div></fieldset>

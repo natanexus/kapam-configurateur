@@ -99,6 +99,7 @@ describe('modale', () => {
     expect(form.querySelector('[data-champ-form="formule"]').value).toBe('Atelier')
     const marque = form.querySelector('[data-champ="select-marque"]'), modele = form.querySelector('[data-champ="select-modele"]')
     expect([...marque.options].map((o) => o.value)).toEqual(['', 'renault', 'fiat', 'autre'])   // Tesla : aucun véhicule
+    expect(form.querySelector('[name="nom"]').placeholder).toBe('Votre nom')
     expect(modele.disabled).toBe(true)
     marque.value = 'renault'; change(marque)
     expect(modele.disabled).toBe(false)
@@ -114,6 +115,13 @@ describe('modale', () => {
     expect(chip.classList.contains('selectionne')).toBe(true)
     expect(form.querySelector('[data-bloc="joindre"]').hidden).toBe(true)   // pas de configuration
     expect(form.querySelector('[data-champ-form="recap"]').value).toBe('')
+  })
+
+  it('crée l\'option vide des selects depuis data-placeholder (champs créés par l\'API)', () => {
+    const { devis } = monter(); devis.ouvrir({ formule: 'kit-diy', vue: 'formulaire' })
+    const sel = document.querySelector('#devis-kit-diy [data-champ="select-marque"]')
+    expect(sel.options[0].value).toBe(''); expect(sel.options[0].textContent).toBe('Sélectionnez la marque')
+    expect(document.querySelector('#devis-kit-diy [data-champ="select-modele"]').options[0].textContent).toBe('Sélectionnez le modèle')
   })
 
   it('pré-remplit depuis la configuration et joint le récapitulatif (décochable)', () => {
