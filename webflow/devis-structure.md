@@ -28,10 +28,10 @@ div.devis_overlay [data-devis] [hidden]                 ← fond cliquable (ferm
   └ section [data-vue="confirmation"] [hidden]
       eyebrow « Demande envoyée » · h2 « Bien reçu ! » · p[data-champ="message"]
       div[data-bloc="rdv"] { p « Pour avancer plus vite, réservez un appel… » + span[data-champ="duree"] (« 30 min ») + a.button[data-action="calcom"] target=_blank }
-div.hide [data-gabarits]
+div.hide [data-gabarits]                                 ← éléments Webflow natifs (26/10) : retirer la classe hide pour les styler dans le Designer, la remettre ensuite
   ├ div.devis_carte [data-gabarit="carte-formule"]  span[data-champ="etiquette"] · h3[data-champ="nom"] · p[data-champ="accroche"] · p[data-champ="tarif"] · span[data-champ="mention"] · button[data-action="presentation"]
   ├ li.devis_ligne [data-gabarit="ligne"]           span[data-champ="numero"] + span[data-champ="titre"]
-  └ label.devis_chip [data-gabarit="chip"]          input (radio, nom/valeur posés par le script) + span[data-champ="titre"]
+  └ label.devis_chip [data-gabarit="chip"]          input.devis_chip_input (radio, nom/valeur posés par le script) + span[data-champ="titre"]
 div.hide [data-devis-donnees] aria-hidden=true        ← 6 listes de collection (voir Données)
 ```
 
