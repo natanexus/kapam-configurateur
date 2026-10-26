@@ -51,6 +51,7 @@ describe('modale', () => {
     expect(racine.hidden).toBe(true)
     clic('.btn-devis-nav')
     expect(racine.hidden).toBe(false)
+    expect(racine.classList.contains('est-ouverte')).toBe(true)
     expect(visible('[data-vue="hub"]')).toBe(true)
     const cartes = racine.querySelectorAll('[data-liste="formules"] [data-formule]')
     expect([...cartes].map((c) => c.dataset.formule)).toEqual(['cle-en-main', 'atelier', 'kit-diy'])
@@ -70,6 +71,7 @@ describe('modale', () => {
     expect(racine.querySelector('[data-action="formulaire"]').textContent).toBe('Demander un devis Atelier')
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
     expect(racine.hidden).toBe(true)
+    expect(racine.classList.contains('est-ouverte')).toBe(false)
     expect(document.activeElement).toBe(b)
   })
 

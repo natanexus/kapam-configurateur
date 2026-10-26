@@ -220,6 +220,7 @@ export function creerDevis({ document: doc, racine, formules, catalogue, configu
   /* ---- rendu ---- */
   function rendre() {
     montrer(racine, etat.ouverte)
+    racine.classList.toggle('est-ouverte', etat.ouverte)   // combo Webflow : la classe de base est display:none (invisible dans le Designer)
     doc.documentElement.classList.toggle('devis-ouverte', etat.ouverte)
     for (const s of $$('[data-vue]', boite)) montrer(s, s.dataset.vue === etat.vue)
     const f = parSlug.get(etat.formule) ?? null

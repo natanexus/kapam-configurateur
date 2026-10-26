@@ -71,7 +71,7 @@ Ces 6 listes s'ajoutent au compte des 40 listes par page (la page Configurateur 
 
 ## États et classes
 
-- Masquage par `hidden` (le style du head le rend prioritaire). `html.devis-ouverte` bloque le scroll de la page.
+- Masquage par `hidden` (le style du head le rend prioritaire). `devis_overlay` est `display:none` (invisible dans le Designer) ; le script pose le combo `est-ouverte` (`display:flex`) à l'ouverture. Pour éditer la modale dans le Designer : ajouter le combo `est-ouverte` sur `devis_overlay`, puis le retirer (le script le retire de toute façon au chargement). `html.devis-ouverte` bloque le scroll de la page.
 - `selectionne` : réponses de l'aide (`aria-pressed`) et chips cochées.
 - Focus piégé dans la boîte, `Escape` et clic sur le fond ferment, le focus revient au bouton d'origine.
 - Événements sur `[data-devis]` : `kapam:devis` (à chaque rendu, `detail = { ouverte, vue, formule, van, pose }`) et `kapam:devis-envoye` (`detail.formule`). Un `dataLayer.push({ event: 'demande_devis_envoyee', formule })` est émis si `window.dataLayer` existe.
