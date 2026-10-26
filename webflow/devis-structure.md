@@ -56,7 +56,7 @@ Champs par formule (maquette) : Clé en main = coordonnées, véhicule envisagé
 
 ## Données (zone `[data-devis-donnees]`, 6 listes de collection)
 
-Même convention que la page Configurateur : chaque item est un `div` avec `data-item="<collection>"` et les champs en attributs `data-*`. Construit le 23/10/2026 par l'API : chaque item contient un **Embed** dont le code porte les champs CMS (`{{wf {"path":"slug","type":"PlainText"\} }}`, référence : `marque:slug`), car l'API ne peut pas lier des attributs dans un composant. Les formulaires sont eux aussi des Embeds (un par formule) : champs, `name`, `required` et chips s'y éditent en HTML.
+Même convention que la page Configurateur : chaque item est un `div` avec `data-item="<collection>"` et les champs CMS liés en attributs `data-*` (pas d'Embed : les marqueurs `{{wf …}}` écrits par l'API restent du texte brut). Limite Webflow (26/10/2026) : l'API ne peut ni créer ni lier une liste CMS dans un composant. Procédure qui marche : construire la zone liée sur une page brouillon (Style Guide) par l'API, puis la copier-coller dans la définition du composant FOOTER depuis le Designer — les liaisons survivent au collage. Les formulaires sont des Embeds (un par formule) : champs, `name`, `required` et chips s'y éditent en HTML.
 
 | Liste | `data-item` | Attributs / enfants |
 |---|---|---|
