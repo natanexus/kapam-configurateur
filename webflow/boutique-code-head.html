@@ -2,4 +2,6 @@
 <style>
   /* L'attribut hidden doit gagner sur les display des classes Client First. */
   [data-boutique] [hidden], [data-cms-donnees] { display: none !important; }
+  /* Rail des filtres ouvert en plein écran (mobile) : pas de défilement de la page derrière. */
+  html.boutique-filtres-ouverts, html.boutique-filtres-ouverts body { overflow: hidden; }
 </style>

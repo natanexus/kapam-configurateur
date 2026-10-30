@@ -517,6 +517,19 @@ export function creerBoutique({ racine, catalogue: c, document: doc = document, 
       case 'tri': return changer({ tri: v ?? 'pertinence' })
     }
   })
+  /**
+   * Rail des filtres en plein écran sur mobile (≤ 767 px, CSS Webflow) : classe `ouvert` sur le rail,
+   * `boutique-filtres-ouverts` sur <html> pour bloquer le défilement. Sans effet visible en desktop.
+   */
+  function ouvrirRail(ouvert) {
+    const rail = q('[data-rail]'); if (!rail) return
+    rail.classList.toggle('ouvert', ouvert)
+    doc.documentElement.classList.toggle('boutique-filtres-ouverts', ouvert)
+    for (const b of qa('[data-action="filtres"]')) b.setAttribute('aria-expanded', String(ouvert))
+    if (ouvert) rail.scrollTop = 0
+    else qa('[data-action="filtres"]')[0]?.focus?.()
+  }
+  doc.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') ouvrirRail(false) })
   let minuterie = null
   racine.addEventListener('input', (ev) => {
     const el = ev.target.closest('[data-filtre="recherche"]'); if (!el) return
@@ -530,10 +543,8 @@ export function creerBoutique({ racine, catalogue: c, document: doc = document, 
     if (action === 'page') { changer({ page: Number(valeur) || 1 }); liste?.scrollIntoView?.({ block: 'start', behavior: 'smooth' }); return }
     if (action === 'tout-effacer') return changer({ ...filtresVides(), tri: f.tri })
     if (action === 'plier') return plier(el.closest('[data-groupe]'), el.getAttribute('aria-expanded') !== 'true')
-    if (action === 'filtres') {
-      const rail = q('[data-rail]'); const cache = rail?.hasAttribute('hidden')
-      montrer(rail, cache); el.setAttribute('aria-expanded', String(!!cache)); return
-    }
+    if (action === 'filtres') return ouvrirRail(!q('[data-rail]')?.classList.contains('ouvert'))
+    if (action === 'fermer-filtres') return ouvrirRail(false)
     if (filtre === 'pose') return changer({ pose: !f.pose })
     if (GROUPES_CASES.includes(filtre)) {
       const l = f[filtre].includes(valeur) ? f[filtre].filter((x) => x !== valeur) : [...f[filtre], valeur]

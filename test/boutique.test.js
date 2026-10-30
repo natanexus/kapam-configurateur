@@ -22,7 +22,7 @@ function page() {
   document.body.innerHTML = `<div data-boutique="kits">
     <div data-bloc="toolbar"><button data-action="filtres"></button><span data-champ="etat-filtres"></span><div data-liste="chips"></div>
       <span data-champ="compteur-haut"></span><select data-filtre="tri"><option value="pertinence">Pertinence</option><option value="prix-croissant">Prix croissant</option><option value="prix-decroissant">Prix décroissant</option></select></div>
-    <aside data-rail><span data-champ="compteur"></span><button data-action="tout-effacer"></button>
+    <aside data-rail><button data-action="fermer-filtres">×</button><span data-champ="compteur"></span><button data-action="tout-effacer"></button>
       <input data-filtre="recherche">
       <div data-groupe="vehicule"><button data-action="plier"><span>Votre véhicule</span><span class="boutique_groupe_icone">−</span></button><div class="boutique_groupe_corps">
         <div data-select="marque" class="boutique_select"><span data-champ="libelle-select">Marque</span><img><select data-filtre="marque"><option value="">Marque</option></select></div>
@@ -88,6 +88,23 @@ describe('règles de filtrage', () => {
 
 describe('page Webflow', () => {
   beforeEach(page)
+  it('ouvre et ferme le rail des filtres (mobile)', () => {
+    const app = creerBoutique({ racine: document.querySelector('[data-boutique]'), catalogue: c, document, ...faux() })
+    app.rendre()
+    const rail = document.querySelector('[data-rail]'), bouton = document.querySelector('[data-action="filtres"]')
+    expect(rail.classList.contains('ouvert')).toBe(false)
+    bouton.click()
+    expect(rail.classList.contains('ouvert')).toBe(true)
+    expect(bouton.getAttribute('aria-expanded')).toBe('true')
+    expect(document.documentElement.classList.contains('boutique-filtres-ouverts')).toBe(true)
+    document.querySelector('[data-action="fermer-filtres"]').click()
+    expect(rail.classList.contains('ouvert')).toBe(false)
+    expect(document.documentElement.classList.contains('boutique-filtres-ouverts')).toBe(false)
+    bouton.click()
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+    expect(rail.classList.contains('ouvert')).toBe(false)
+    expect(rail.hasAttribute('hidden')).toBe(false)
+  })
   it('remplit les selects, masque les cartes et met l\'URL à jour', () => {
     const faux1 = faux()
     const app = creerBoutique({ racine: document.querySelector('[data-boutique]'), catalogue: c, document, ...faux1 })
